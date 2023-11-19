@@ -1,8 +1,4 @@
 
-function $parcel$export(e, n, v, s) {
-  Object.defineProperty(e, n, {get: v, set: s, enumerable: true, configurable: true});
-}
-
       var $parcel$global = globalThis;
     
 var $parcel$modules = {};
@@ -96,31 +92,9 @@ module.exports = $92x9i("5nseh").then(()=>parcelRequire("dWzk5"));
 
 });
 
-parcelRegister("5Pd9Q", function(module, exports) {
-
-$parcel$export(module.exports, "ROM", () => $43dbec08a00b36a8$export$c643cc54d6326a6f);
-/**
- * Represents a chip ROM with basic registers field and abstract functions.
- */ class $43dbec08a00b36a8$export$c643cc54d6326a6f {
-    /**
-     * Get the chip erase size.
-     * @param {number} offset - Offset to start erase.
-     * @param {number} size - Size to erase.
-     * @returns {number} The erase size of the chip as number.
-     */ getEraseSize(offset, size) {
-        return size;
-    }
+class $07442ebb96f65399$export$5b519f82636185ec extends Error {
 }
-
-});
-
-/**
- * Represents a Espressif chip error.
- */ class $07442ebb96f65399$export$5b519f82636185ec extends Error {
-}
-/**
- * Represents a Espressif timeout chip error.
- */ class $07442ebb96f65399$export$66d311bf29d5c89c extends $07442ebb96f65399$export$5b519f82636185ec {
+class $07442ebb96f65399$export$66d311bf29d5c89c extends $07442ebb96f65399$export$5b519f82636185ec {
 }
 
 
@@ -5340,145 +5314,111 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
 };
 
 
-/* global SerialPort, ParityType, FlowControlType */ /**
- * Wrapper class around Webserial API to communicate with the serial device.
- * @param {typeof import("w3c-web-serial").SerialPort} device - Requested device prompted by the browser.
- *
- * ```
- * const port = await navigator.serial.requestPort();
- * ```
- */ class $a0cf3cac0d21f701$export$86495b081fef8e52 {
+class $a0cf3cac0d21f701$export$86495b081fef8e52 {
     constructor(device){
         this.device = device;
-        this.slipReaderEnabled = false;
-        this.leftOver = new Uint8Array(0);
+        this.slip_reader_enabled = false;
+        this.left_over = new Uint8Array(0);
         this.baudrate = 0;
         this._DTR_state = false;
     }
-    /**
-     * Request the serial device vendor ID and Product ID as string.
-     * @returns {string} Return the device VendorID and ProductID from SerialPortInfo as formatted string.
-     */ getInfo() {
+    get_info() {
         const info = this.device.getInfo();
         return info.usbVendorId && info.usbProductId ? `WebSerial VendorID 0x${info.usbVendorId.toString(16)} ProductID 0x${info.usbProductId.toString(16)}` : "";
     }
-    /**
-     * Request the serial device product id from SerialPortInfo.
-     * @returns {string} Return the product ID.
-     */ getPid() {
+    get_pid() {
         return this.device.getInfo().usbProductId;
     }
-    /**
-     * Format data packet using the Serial Line Internet Protocol (SLIP).
-     * @param {Uint8Array} data Binary unsigned 8 bit array data to format.
-     * @returns {Uint8Array} Formatted unsigned 8 bit data array.
-     */ slipWriter(data) {
-        let countEsc = 0;
+    slip_writer(data) {
+        let count_esc = 0;
         let i = 0, j = 0;
-        for(i = 0; i < data.length; i++)if (data[i] === 0xc0 || data[i] === 0xdb) countEsc++;
-        const outData = new Uint8Array(2 + countEsc + data.length);
-        outData[0] = 0xc0;
+        for(i = 0; i < data.length; i++)if (data[i] === 0xc0 || data[i] === 0xdb) count_esc++;
+        const out_data = new Uint8Array(2 + count_esc + data.length);
+        out_data[0] = 0xc0;
         j = 1;
         for(i = 0; i < data.length; i++, j++){
             if (data[i] === 0xc0) {
-                outData[j++] = 0xdb;
-                outData[j] = 0xdc;
+                out_data[j++] = 0xdb;
+                out_data[j] = 0xdc;
                 continue;
             }
             if (data[i] === 0xdb) {
-                outData[j++] = 0xdb;
-                outData[j] = 0xdd;
+                out_data[j++] = 0xdb;
+                out_data[j] = 0xdd;
                 continue;
             }
-            outData[j] = data[i];
+            out_data[j] = data[i];
         }
-        outData[j] = 0xc0;
-        return outData;
+        out_data[j] = 0xc0;
+        return out_data;
     }
-    /**
-     * Write binary data to device using the WebSerial device writable stream.
-     * @param {Uint8Array} data 8 bit unsigned data array to write to device.
-     */ async write(data) {
-        const outData = this.slipWriter(data);
+    async write(data) {
+        const out_data = this.slip_writer(data);
         if (this.device.writable) {
             const writer = this.device.writable.getWriter();
-            await writer.write(outData);
+            await writer.write(out_data);
             writer.releaseLock();
         }
     }
-    /**
-     * Concatenate buffer2 to buffer1 and return the resulting ArrayBuffer.
-     * @param {ArrayBuffer} buffer1 First buffer to concatenate.
-     * @param {ArrayBuffer} buffer2 Second buffer to concatenate.
-     * @returns {ArrayBuffer} Result Array buffer.
-     */ _appendBuffer(buffer1, buffer2) {
+    _appendBuffer(buffer1, buffer2) {
         const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
         tmp.set(new Uint8Array(buffer1), 0);
         tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
         return tmp.buffer;
     }
-    /**
-     * Take a data array and return the first well formed packet after
-     * replacing the escape sequence. Reads at least 8 bytes.
-     * @param {Uint8Array} data Unsigned 8 bit array from the device read stream.
-     * @returns {Uint8Array} Formatted packet using SLIP escape sequences.
-     */ slipReader(data) {
+    /* this function expects complete packet (hence reader reads for atleast 8 bytes. This function is
+     * stateless and returns the first wellformed packet only after replacing escape sequence */ slip_reader(data) {
         let i = 0;
-        let dataStart = 0, dataEnd = 0;
+        let data_start = 0, data_end = 0;
         let state = "init";
         while(i < data.length){
             if (state === "init" && data[i] == 0xc0) {
-                dataStart = i + 1;
+                data_start = i + 1;
                 state = "valid_data";
                 i++;
                 continue;
             }
             if (state === "valid_data" && data[i] == 0xc0) {
-                dataEnd = i - 1;
+                data_end = i - 1;
                 state = "packet_complete";
                 break;
             }
             i++;
         }
         if (state !== "packet_complete") {
-            this.leftOver = data;
+            this.left_over = data;
             return new Uint8Array(0);
         }
-        this.leftOver = data.slice(dataEnd + 2);
-        const tempPkt = new Uint8Array(dataEnd - dataStart + 1);
+        this.left_over = data.slice(data_end + 2);
+        const temp_pkt = new Uint8Array(data_end - data_start + 1);
         let j = 0;
-        for(i = dataStart; i <= dataEnd; i++, j++){
+        for(i = data_start; i <= data_end; i++, j++){
             if (data[i] === 0xdb && data[i + 1] === 0xdc) {
-                tempPkt[j] = 0xc0;
+                temp_pkt[j] = 0xc0;
                 i++;
                 continue;
             }
             if (data[i] === 0xdb && data[i + 1] === 0xdd) {
-                tempPkt[j] = 0xdb;
+                temp_pkt[j] = 0xdb;
                 i++;
                 continue;
             }
-            tempPkt[j] = data[i];
+            temp_pkt[j] = data[i];
         }
-        const packet = tempPkt.slice(0, j); /* Remove unused bytes due to escape seq */ 
+        const packet = temp_pkt.slice(0, j); /* Remove unused bytes due to escape seq */ 
         return packet;
     }
-    /**
-     * Read from serial device using the device ReadableStream.
-     * @param {number} timeout Read timeout number
-     * @param {number} minData Minimum packet array length
-     * @returns {Uint8Array} 8 bit unsigned data array read from device.
-     */ async read(timeout = 0, minData = 12) {
+    async read(timeout = 0, min_data = 12) {
         let t;
-        let packet = this.leftOver;
-        this.leftOver = new Uint8Array(0);
-        if (this.slipReaderEnabled) {
-            const valFinal = this.slipReader(packet);
-            if (valFinal.length > 0) return valFinal;
-            packet = this.leftOver;
-            this.leftOver = new Uint8Array(0);
+        let packet = this.left_over;
+        this.left_over = new Uint8Array(0);
+        if (this.slip_reader_enabled) {
+            const val_final = this.slip_reader(packet);
+            if (val_final.length > 0) return val_final;
+            packet = this.left_over;
+            this.left_over = new Uint8Array(0);
         }
-        if (this.device.readable == null) return this.leftOver;
+        if (this.device.readable == null) return this.left_over;
         const reader = this.device.readable.getReader();
         try {
             if (timeout > 0) t = setTimeout(function() {
@@ -5487,30 +5427,26 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
             do {
                 const { value: value, done: done } = await reader.read();
                 if (done) {
-                    this.leftOver = packet;
+                    this.left_over = packet;
                     throw new Error("Timeout");
                 }
                 const p = new Uint8Array(this._appendBuffer(packet.buffer, value.buffer));
                 packet = p;
-            }while (packet.length < minData);
+            }while (packet.length < min_data);
         } finally{
             if (timeout > 0) clearTimeout(t);
             reader.releaseLock();
         }
-        if (this.slipReaderEnabled) return this.slipReader(packet);
+        if (this.slip_reader_enabled) return this.slip_reader(packet);
         return packet;
     }
-    /**
-     * Read from serial device without slip formatting.
-     * @param {number} timeout Read timeout in milliseconds (ms)
-     * @returns {Uint8Array} 8 bit unsigned data array read from device.
-     */ async rawRead(timeout = 0) {
-        if (this.leftOver.length != 0) {
-            const p = this.leftOver;
-            this.leftOver = new Uint8Array(0);
+    async rawRead(timeout = 0) {
+        if (this.left_over.length != 0) {
+            const p = this.left_over;
+            this.left_over = new Uint8Array(0);
             return p;
         }
-        if (!this.device.readable) return this.leftOver;
+        if (!this.device.readable) return this.left_over;
         const reader = this.device.readable.getReader();
         let t;
         try {
@@ -5525,11 +5461,7 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
             reader.releaseLock();
         }
     }
-    /**
-     * Send the RequestToSend (RTS) signal to given state
-     * # True for EN=LOW, chip in reset and False EN=HIGH, chip out of reset
-     * @param {boolean} state Boolean state to set the signal
-     */ async setRTS(state) {
+    async setRTS(state) {
         await this.device.setSignals({
             requestToSend: state
         });
@@ -5539,21 +5471,13 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
         // Referenced to esptool.py
         await this.setDTR(this._DTR_state);
     }
-    /**
-     * Send the dataTerminalReady (DTS) signal to given state
-     * # True for IO0=LOW, chip in reset and False IO0=HIGH
-     * @param {boolean} state Boolean state to set the signal
-     */ async setDTR(state) {
+    async setDTR(state) {
         this._DTR_state = state;
         await this.device.setSignals({
             dataTerminalReady: state
         });
     }
-    /**
-     * Connect to serial device using the Webserial open method.
-     * @param {number} baud Number baud rate for serial connection.
-     * @param {typeof import("w3c-web-serial").SerialOptions} serialOptions Serial Options for WebUSB SerialPort class.
-     */ async connect(baud = 115200, serialOptions = {}) {
+    async connect(baud = 115200, serialOptions = {}) {
         await this.device.open({
             baudRate: baud,
             dataBits: serialOptions === null || serialOptions === void 0 ? void 0 : serialOptions.dataBits,
@@ -5563,20 +5487,15 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
             flowControl: serialOptions === null || serialOptions === void 0 ? void 0 : serialOptions.flowControl
         });
         this.baudrate = baud;
-        this.leftOver = new Uint8Array(0);
+        this.left_over = new Uint8Array(0);
     }
     async sleep(ms) {
         return new Promise((resolve)=>setTimeout(resolve, ms));
     }
-    /**
-     * Wait for a given timeout ms for serial device unlock.
-     * @param {number} timeout Timeout time in milliseconds (ms) to sleep
-     */ async waitForUnlock(timeout) {
+    async waitForUnlock(timeout) {
         while(this.device.readable && this.device.readable.locked || this.device.writable && this.device.writable.locked)await this.sleep(timeout);
     }
-    /**
-     * Disconnect from serial device by running SerialPort.close() after streams unlock.
-     */ async disconnect() {
+    async disconnect() {
         await this.waitForUnlock(400);
         await this.device.close();
     }
@@ -5584,11 +5503,7 @@ var $1d314fc79f930156$export$2e2bcd8739ae039 = {
 
 
 const $566461229c0b5a39$var$DEFAULT_RESET_DELAY = 50;
-/**
- * Sleep for ms milliseconds
- * @param {number} ms Milliseconds to wait
- * @returns {Promise<void>}
- */ function $566461229c0b5a39$var$sleep(ms) {
+function $566461229c0b5a39$var$sleep(ms) {
     return new Promise((resolve)=>setTimeout(resolve, ms));
 }
 async function $566461229c0b5a39$export$d3423661fbfd2b60(transport, resetDelay = $566461229c0b5a39$var$DEFAULT_RESET_DELAY) {
@@ -5673,1414 +5588,6 @@ var $566461229c0b5a39$export$2e2bcd8739ae039 = {
 };
 
 
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */ /* eslint-disable no-proto */ var $40a00c8828823352$export$a143d493d941bafc;
-var $40a00c8828823352$export$e4cf37d7f6fb9e0a;
-var $40a00c8828823352$export$f99ded8fe4b79145;
-var $40a00c8828823352$export$599f31c3813fae4d;
-"use strict";
-var $1b962295b9d4704b$export$a48f0734ac7c2329;
-var $1b962295b9d4704b$export$d622b2ad8d90c771;
-var $1b962295b9d4704b$export$6100ba28696e12de;
-"use strict";
-$1b962295b9d4704b$export$a48f0734ac7c2329 = $1b962295b9d4704b$var$byteLength;
-$1b962295b9d4704b$export$d622b2ad8d90c771 = $1b962295b9d4704b$var$toByteArray;
-$1b962295b9d4704b$export$6100ba28696e12de = $1b962295b9d4704b$var$fromByteArray;
-var $1b962295b9d4704b$var$lookup = [];
-var $1b962295b9d4704b$var$revLookup = [];
-var $1b962295b9d4704b$var$Arr = typeof Uint8Array !== "undefined" ? Uint8Array : Array;
-var $1b962295b9d4704b$var$code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-for(var $1b962295b9d4704b$var$i = 0, $1b962295b9d4704b$var$len = $1b962295b9d4704b$var$code.length; $1b962295b9d4704b$var$i < $1b962295b9d4704b$var$len; ++$1b962295b9d4704b$var$i){
-    $1b962295b9d4704b$var$lookup[$1b962295b9d4704b$var$i] = $1b962295b9d4704b$var$code[$1b962295b9d4704b$var$i];
-    $1b962295b9d4704b$var$revLookup[$1b962295b9d4704b$var$code.charCodeAt($1b962295b9d4704b$var$i)] = $1b962295b9d4704b$var$i;
-}
-// Support decoding URL-safe base64 strings, as Node.js does.
-// See: https://en.wikipedia.org/wiki/Base64#URL_applications
-$1b962295b9d4704b$var$revLookup["-".charCodeAt(0)] = 62;
-$1b962295b9d4704b$var$revLookup["_".charCodeAt(0)] = 63;
-function $1b962295b9d4704b$var$getLens(b64) {
-    var len = b64.length;
-    if (len % 4 > 0) throw new Error("Invalid string. Length must be a multiple of 4");
-    // Trim off extra bytes after placeholder bytes are found
-    // See: https://github.com/beatgammit/base64-js/issues/42
-    var validLen = b64.indexOf("=");
-    if (validLen === -1) validLen = len;
-    var placeHoldersLen = validLen === len ? 0 : 4 - validLen % 4;
-    return [
-        validLen,
-        placeHoldersLen
-    ];
-}
-// base64 is 4/3 + up to two characters of the original data
-function $1b962295b9d4704b$var$byteLength(b64) {
-    var lens = $1b962295b9d4704b$var$getLens(b64);
-    var validLen = lens[0];
-    var placeHoldersLen = lens[1];
-    return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
-}
-function $1b962295b9d4704b$var$_byteLength(b64, validLen, placeHoldersLen) {
-    return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
-}
-function $1b962295b9d4704b$var$toByteArray(b64) {
-    var tmp;
-    var lens = $1b962295b9d4704b$var$getLens(b64);
-    var validLen = lens[0];
-    var placeHoldersLen = lens[1];
-    var arr = new $1b962295b9d4704b$var$Arr($1b962295b9d4704b$var$_byteLength(b64, validLen, placeHoldersLen));
-    var curByte = 0;
-    // if there are placeholders, only get up to the last complete 4 chars
-    var len = placeHoldersLen > 0 ? validLen - 4 : validLen;
-    var i;
-    for(i = 0; i < len; i += 4){
-        tmp = $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i)] << 18 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 1)] << 12 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 2)] << 6 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 3)];
-        arr[curByte++] = tmp >> 16 & 0xFF;
-        arr[curByte++] = tmp >> 8 & 0xFF;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    if (placeHoldersLen === 2) {
-        tmp = $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i)] << 2 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 1)] >> 4;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    if (placeHoldersLen === 1) {
-        tmp = $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i)] << 10 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 1)] << 4 | $1b962295b9d4704b$var$revLookup[b64.charCodeAt(i + 2)] >> 2;
-        arr[curByte++] = tmp >> 8 & 0xFF;
-        arr[curByte++] = tmp & 0xFF;
-    }
-    return arr;
-}
-function $1b962295b9d4704b$var$tripletToBase64(num) {
-    return $1b962295b9d4704b$var$lookup[num >> 18 & 0x3F] + $1b962295b9d4704b$var$lookup[num >> 12 & 0x3F] + $1b962295b9d4704b$var$lookup[num >> 6 & 0x3F] + $1b962295b9d4704b$var$lookup[num & 0x3F];
-}
-function $1b962295b9d4704b$var$encodeChunk(uint8, start, end) {
-    var tmp;
-    var output = [];
-    for(var i = start; i < end; i += 3){
-        tmp = (uint8[i] << 16 & 0xFF0000) + (uint8[i + 1] << 8 & 0xFF00) + (uint8[i + 2] & 0xFF);
-        output.push($1b962295b9d4704b$var$tripletToBase64(tmp));
-    }
-    return output.join("");
-}
-function $1b962295b9d4704b$var$fromByteArray(uint8) {
-    var tmp;
-    var len = uint8.length;
-    var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-    ;
-    var parts = [];
-    var maxChunkLength = 16383 // must be multiple of 3
-    ;
-    // go through the array every three bytes, we'll deal with trailing stuff later
-    for(var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength)parts.push($1b962295b9d4704b$var$encodeChunk(uint8, i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
-    // pad the end with zeros, but make sure to not forget the extra bytes
-    if (extraBytes === 1) {
-        tmp = uint8[len - 1];
-        parts.push($1b962295b9d4704b$var$lookup[tmp >> 2] + $1b962295b9d4704b$var$lookup[tmp << 4 & 0x3F] + "==");
-    } else if (extraBytes === 2) {
-        tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-        parts.push($1b962295b9d4704b$var$lookup[tmp >> 10] + $1b962295b9d4704b$var$lookup[tmp >> 4 & 0x3F] + $1b962295b9d4704b$var$lookup[tmp << 2 & 0x3F] + "=");
-    }
-    return parts.join("");
-}
-
-
-/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */ var $d2f9e2fe5bb754ad$export$aafa59e2e03f2942;
-var $d2f9e2fe5bb754ad$export$68d8715fc104d294;
-$d2f9e2fe5bb754ad$export$aafa59e2e03f2942 = function(buffer, offset, isLE, mLen, nBytes) {
-    var e, m;
-    var eLen = nBytes * 8 - mLen - 1;
-    var eMax = (1 << eLen) - 1;
-    var eBias = eMax >> 1;
-    var nBits = -7;
-    var i = isLE ? nBytes - 1 : 0;
-    var d = isLE ? -1 : 1;
-    var s = buffer[offset + i];
-    i += d;
-    e = s & (1 << -nBits) - 1;
-    s >>= -nBits;
-    nBits += eLen;
-    for(; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
-    m = e & (1 << -nBits) - 1;
-    e >>= -nBits;
-    nBits += mLen;
-    for(; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
-    if (e === 0) e = 1 - eBias;
-    else if (e === eMax) return m ? NaN : (s ? -1 : 1) * Infinity;
-    else {
-        m = m + Math.pow(2, mLen);
-        e = e - eBias;
-    }
-    return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-};
-$d2f9e2fe5bb754ad$export$68d8715fc104d294 = function(buffer, value, offset, isLE, mLen, nBytes) {
-    var e, m, c;
-    var eLen = nBytes * 8 - mLen - 1;
-    var eMax = (1 << eLen) - 1;
-    var eBias = eMax >> 1;
-    var rt = mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0;
-    var i = isLE ? 0 : nBytes - 1;
-    var d = isLE ? 1 : -1;
-    var s = value < 0 || value === 0 && 1 / value < 0 ? 1 : 0;
-    value = Math.abs(value);
-    if (isNaN(value) || value === Infinity) {
-        m = isNaN(value) ? 1 : 0;
-        e = eMax;
-    } else {
-        e = Math.floor(Math.log(value) / Math.LN2);
-        if (value * (c = Math.pow(2, -e)) < 1) {
-            e--;
-            c *= 2;
-        }
-        if (e + eBias >= 1) value += rt / c;
-        else value += rt * Math.pow(2, 1 - eBias);
-        if (value * c >= 2) {
-            e++;
-            c /= 2;
-        }
-        if (e + eBias >= eMax) {
-            m = 0;
-            e = eMax;
-        } else if (e + eBias >= 1) {
-            m = (value * c - 1) * Math.pow(2, mLen);
-            e = e + eBias;
-        } else {
-            m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-            e = 0;
-        }
-    }
-    for(; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
-    e = e << mLen | m;
-    eLen += mLen;
-    for(; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
-    buffer[offset + i - d] |= s * 128;
-};
-
-
-var $40a00c8828823352$var$customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" // eslint-disable-line dot-notation
- ? Symbol["for"]("nodejs.util.inspect.custom") // eslint-disable-line dot-notation
- : null;
-$40a00c8828823352$export$a143d493d941bafc = $40a00c8828823352$var$Buffer;
-$40a00c8828823352$export$e4cf37d7f6fb9e0a = $40a00c8828823352$var$SlowBuffer;
-$40a00c8828823352$export$f99ded8fe4b79145 = 50;
-var $40a00c8828823352$var$K_MAX_LENGTH = 0x7fffffff;
-$40a00c8828823352$export$599f31c3813fae4d = $40a00c8828823352$var$K_MAX_LENGTH;
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Print warning and recommend using `buffer` v4.x which has an Object
- *               implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * We report that the browser does not support typed arrays if the are not subclassable
- * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
- * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
- * for __proto__ and has a buggy typed array implementation.
- */ $40a00c8828823352$var$Buffer.TYPED_ARRAY_SUPPORT = $40a00c8828823352$var$typedArraySupport();
-if (!$40a00c8828823352$var$Buffer.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" && typeof console.error === "function") console.error("This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support.");
-function $40a00c8828823352$var$typedArraySupport() {
-    // Can typed array instances can be augmented?
-    try {
-        var arr = new Uint8Array(1);
-        var proto = {
-            foo: function() {
-                return 42;
-            }
-        };
-        Object.setPrototypeOf(proto, Uint8Array.prototype);
-        Object.setPrototypeOf(arr, proto);
-        return arr.foo() === 42;
-    } catch (e) {
-        return false;
-    }
-}
-Object.defineProperty($40a00c8828823352$var$Buffer.prototype, "parent", {
-    enumerable: true,
-    get: function() {
-        if (!$40a00c8828823352$var$Buffer.isBuffer(this)) return undefined;
-        return this.buffer;
-    }
-});
-Object.defineProperty($40a00c8828823352$var$Buffer.prototype, "offset", {
-    enumerable: true,
-    get: function() {
-        if (!$40a00c8828823352$var$Buffer.isBuffer(this)) return undefined;
-        return this.byteOffset;
-    }
-});
-function $40a00c8828823352$var$createBuffer(length) {
-    if (length > $40a00c8828823352$var$K_MAX_LENGTH) throw new RangeError('The value "' + length + '" is invalid for option "size"');
-    // Return an augmented `Uint8Array` instance
-    var buf = new Uint8Array(length);
-    Object.setPrototypeOf(buf, $40a00c8828823352$var$Buffer.prototype);
-    return buf;
-}
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */ function $40a00c8828823352$var$Buffer(arg, encodingOrOffset, length) {
-    // Common case.
-    if (typeof arg === "number") {
-        if (typeof encodingOrOffset === "string") throw new TypeError('The "string" argument must be of type string. Received type number');
-        return $40a00c8828823352$var$allocUnsafe(arg);
-    }
-    return $40a00c8828823352$var$from(arg, encodingOrOffset, length);
-}
-$40a00c8828823352$var$Buffer.poolSize = 8192 // not used by this implementation
-;
-function $40a00c8828823352$var$from(value, encodingOrOffset, length) {
-    if (typeof value === "string") return $40a00c8828823352$var$fromString(value, encodingOrOffset);
-    if (ArrayBuffer.isView(value)) return $40a00c8828823352$var$fromArrayView(value);
-    if (value == null) throw new TypeError("The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value);
-    if ($40a00c8828823352$var$isInstance(value, ArrayBuffer) || value && $40a00c8828823352$var$isInstance(value.buffer, ArrayBuffer)) return $40a00c8828823352$var$fromArrayBuffer(value, encodingOrOffset, length);
-    if (typeof SharedArrayBuffer !== "undefined" && ($40a00c8828823352$var$isInstance(value, SharedArrayBuffer) || value && $40a00c8828823352$var$isInstance(value.buffer, SharedArrayBuffer))) return $40a00c8828823352$var$fromArrayBuffer(value, encodingOrOffset, length);
-    if (typeof value === "number") throw new TypeError('The "value" argument must not be of type number. Received type number');
-    var valueOf = value.valueOf && value.valueOf();
-    if (valueOf != null && valueOf !== value) return $40a00c8828823352$var$Buffer.from(valueOf, encodingOrOffset, length);
-    var b = $40a00c8828823352$var$fromObject(value);
-    if (b) return b;
-    if (typeof Symbol !== "undefined" && Symbol.toPrimitive != null && typeof value[Symbol.toPrimitive] === "function") return $40a00c8828823352$var$Buffer.from(value[Symbol.toPrimitive]("string"), encodingOrOffset, length);
-    throw new TypeError("The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value);
-}
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/ $40a00c8828823352$var$Buffer.from = function(value, encodingOrOffset, length) {
-    return $40a00c8828823352$var$from(value, encodingOrOffset, length);
-};
-// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
-// https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf($40a00c8828823352$var$Buffer.prototype, Uint8Array.prototype);
-Object.setPrototypeOf($40a00c8828823352$var$Buffer, Uint8Array);
-function $40a00c8828823352$var$assertSize(size) {
-    if (typeof size !== "number") throw new TypeError('"size" argument must be of type number');
-    else if (size < 0) throw new RangeError('The value "' + size + '" is invalid for option "size"');
-}
-function $40a00c8828823352$var$alloc(size, fill, encoding) {
-    $40a00c8828823352$var$assertSize(size);
-    if (size <= 0) return $40a00c8828823352$var$createBuffer(size);
-    if (fill !== undefined) // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpreted as a start offset.
-    return typeof encoding === "string" ? $40a00c8828823352$var$createBuffer(size).fill(fill, encoding) : $40a00c8828823352$var$createBuffer(size).fill(fill);
-    return $40a00c8828823352$var$createBuffer(size);
-}
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/ $40a00c8828823352$var$Buffer.alloc = function(size, fill, encoding) {
-    return $40a00c8828823352$var$alloc(size, fill, encoding);
-};
-function $40a00c8828823352$var$allocUnsafe(size) {
-    $40a00c8828823352$var$assertSize(size);
-    return $40a00c8828823352$var$createBuffer(size < 0 ? 0 : $40a00c8828823352$var$checked(size) | 0);
-}
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */ $40a00c8828823352$var$Buffer.allocUnsafe = function(size) {
-    return $40a00c8828823352$var$allocUnsafe(size);
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */ $40a00c8828823352$var$Buffer.allocUnsafeSlow = function(size) {
-    return $40a00c8828823352$var$allocUnsafe(size);
-};
-function $40a00c8828823352$var$fromString(string, encoding) {
-    if (typeof encoding !== "string" || encoding === "") encoding = "utf8";
-    if (!$40a00c8828823352$var$Buffer.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
-    var length = $40a00c8828823352$var$byteLength(string, encoding) | 0;
-    var buf = $40a00c8828823352$var$createBuffer(length);
-    var actual = buf.write(string, encoding);
-    if (actual !== length) // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    buf = buf.slice(0, actual);
-    return buf;
-}
-function $40a00c8828823352$var$fromArrayLike(array) {
-    var length = array.length < 0 ? 0 : $40a00c8828823352$var$checked(array.length) | 0;
-    var buf = $40a00c8828823352$var$createBuffer(length);
-    for(var i = 0; i < length; i += 1)buf[i] = array[i] & 255;
-    return buf;
-}
-function $40a00c8828823352$var$fromArrayView(arrayView) {
-    if ($40a00c8828823352$var$isInstance(arrayView, Uint8Array)) {
-        var copy = new Uint8Array(arrayView);
-        return $40a00c8828823352$var$fromArrayBuffer(copy.buffer, copy.byteOffset, copy.byteLength);
-    }
-    return $40a00c8828823352$var$fromArrayLike(arrayView);
-}
-function $40a00c8828823352$var$fromArrayBuffer(array, byteOffset, length) {
-    if (byteOffset < 0 || array.byteLength < byteOffset) throw new RangeError('"offset" is outside of buffer bounds');
-    if (array.byteLength < byteOffset + (length || 0)) throw new RangeError('"length" is outside of buffer bounds');
-    var buf;
-    if (byteOffset === undefined && length === undefined) buf = new Uint8Array(array);
-    else if (length === undefined) buf = new Uint8Array(array, byteOffset);
-    else buf = new Uint8Array(array, byteOffset, length);
-    // Return an augmented `Uint8Array` instance
-    Object.setPrototypeOf(buf, $40a00c8828823352$var$Buffer.prototype);
-    return buf;
-}
-function $40a00c8828823352$var$fromObject(obj) {
-    if ($40a00c8828823352$var$Buffer.isBuffer(obj)) {
-        var len = $40a00c8828823352$var$checked(obj.length) | 0;
-        var buf = $40a00c8828823352$var$createBuffer(len);
-        if (buf.length === 0) return buf;
-        obj.copy(buf, 0, 0, len);
-        return buf;
-    }
-    if (obj.length !== undefined) {
-        if (typeof obj.length !== "number" || $40a00c8828823352$var$numberIsNaN(obj.length)) return $40a00c8828823352$var$createBuffer(0);
-        return $40a00c8828823352$var$fromArrayLike(obj);
-    }
-    if (obj.type === "Buffer" && Array.isArray(obj.data)) return $40a00c8828823352$var$fromArrayLike(obj.data);
-}
-function $40a00c8828823352$var$checked(length) {
-    // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
-    // length is NaN (which is otherwise coerced to zero.)
-    if (length >= $40a00c8828823352$var$K_MAX_LENGTH) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + $40a00c8828823352$var$K_MAX_LENGTH.toString(16) + " bytes");
-    return length | 0;
-}
-function $40a00c8828823352$var$SlowBuffer(length) {
-    if (+length != length) length = 0;
-    return $40a00c8828823352$var$Buffer.alloc(+length);
-}
-$40a00c8828823352$var$Buffer.isBuffer = function isBuffer(b) {
-    return b != null && b._isBuffer === true && b !== $40a00c8828823352$var$Buffer.prototype // so Buffer.isBuffer(Buffer.prototype) will be false
-    ;
-};
-$40a00c8828823352$var$Buffer.compare = function compare(a, b) {
-    if ($40a00c8828823352$var$isInstance(a, Uint8Array)) a = $40a00c8828823352$var$Buffer.from(a, a.offset, a.byteLength);
-    if ($40a00c8828823352$var$isInstance(b, Uint8Array)) b = $40a00c8828823352$var$Buffer.from(b, b.offset, b.byteLength);
-    if (!$40a00c8828823352$var$Buffer.isBuffer(a) || !$40a00c8828823352$var$Buffer.isBuffer(b)) throw new TypeError('The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array');
-    if (a === b) return 0;
-    var x = a.length;
-    var y = b.length;
-    for(var i = 0, len = Math.min(x, y); i < len; ++i)if (a[i] !== b[i]) {
-        x = a[i];
-        y = b[i];
-        break;
-    }
-    if (x < y) return -1;
-    if (y < x) return 1;
-    return 0;
-};
-$40a00c8828823352$var$Buffer.isEncoding = function isEncoding(encoding) {
-    switch(String(encoding).toLowerCase()){
-        case "hex":
-        case "utf8":
-        case "utf-8":
-        case "ascii":
-        case "latin1":
-        case "binary":
-        case "base64":
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return true;
-        default:
-            return false;
-    }
-};
-$40a00c8828823352$var$Buffer.concat = function concat(list, length) {
-    if (!Array.isArray(list)) throw new TypeError('"list" argument must be an Array of Buffers');
-    if (list.length === 0) return $40a00c8828823352$var$Buffer.alloc(0);
-    var i;
-    if (length === undefined) {
-        length = 0;
-        for(i = 0; i < list.length; ++i)length += list[i].length;
-    }
-    var buffer = $40a00c8828823352$var$Buffer.allocUnsafe(length);
-    var pos = 0;
-    for(i = 0; i < list.length; ++i){
-        var buf = list[i];
-        if ($40a00c8828823352$var$isInstance(buf, Uint8Array)) {
-            if (pos + buf.length > buffer.length) $40a00c8828823352$var$Buffer.from(buf).copy(buffer, pos);
-            else Uint8Array.prototype.set.call(buffer, buf, pos);
-        } else if (!$40a00c8828823352$var$Buffer.isBuffer(buf)) throw new TypeError('"list" argument must be an Array of Buffers');
-        else buf.copy(buffer, pos);
-        pos += buf.length;
-    }
-    return buffer;
-};
-function $40a00c8828823352$var$byteLength(string, encoding) {
-    if ($40a00c8828823352$var$Buffer.isBuffer(string)) return string.length;
-    if (ArrayBuffer.isView(string) || $40a00c8828823352$var$isInstance(string, ArrayBuffer)) return string.byteLength;
-    if (typeof string !== "string") throw new TypeError('The "string" argument must be one of type string, Buffer, or ArrayBuffer. Received type ' + typeof string);
-    var len = string.length;
-    var mustMatch = arguments.length > 2 && arguments[2] === true;
-    if (!mustMatch && len === 0) return 0;
-    // Use a for loop to avoid recursion
-    var loweredCase = false;
-    for(;;)switch(encoding){
-        case "ascii":
-        case "latin1":
-        case "binary":
-            return len;
-        case "utf8":
-        case "utf-8":
-            return $40a00c8828823352$var$utf8ToBytes(string).length;
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return len * 2;
-        case "hex":
-            return len >>> 1;
-        case "base64":
-            return $40a00c8828823352$var$base64ToBytes(string).length;
-        default:
-            if (loweredCase) return mustMatch ? -1 : $40a00c8828823352$var$utf8ToBytes(string).length // assume utf8
-            ;
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
-    }
-}
-$40a00c8828823352$var$Buffer.byteLength = $40a00c8828823352$var$byteLength;
-function $40a00c8828823352$var$slowToString(encoding, start, end) {
-    var loweredCase = false;
-    // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-    // property of a typed array.
-    // This behaves neither like String nor Uint8Array in that we set start/end
-    // to their upper/lower bounds if the value passed is out of range.
-    // undefined is handled specially as per ECMA-262 6th Edition,
-    // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-    if (start === undefined || start < 0) start = 0;
-    // Return early if start > this.length. Done here to prevent potential uint32
-    // coercion fail below.
-    if (start > this.length) return "";
-    if (end === undefined || end > this.length) end = this.length;
-    if (end <= 0) return "";
-    // Force coercion to uint32. This will also coerce falsey/NaN values to 0.
-    end >>>= 0;
-    start >>>= 0;
-    if (end <= start) return "";
-    if (!encoding) encoding = "utf8";
-    while(true)switch(encoding){
-        case "hex":
-            return $40a00c8828823352$var$hexSlice(this, start, end);
-        case "utf8":
-        case "utf-8":
-            return $40a00c8828823352$var$utf8Slice(this, start, end);
-        case "ascii":
-            return $40a00c8828823352$var$asciiSlice(this, start, end);
-        case "latin1":
-        case "binary":
-            return $40a00c8828823352$var$latin1Slice(this, start, end);
-        case "base64":
-            return $40a00c8828823352$var$base64Slice(this, start, end);
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return $40a00c8828823352$var$utf16leSlice(this, start, end);
-        default:
-            if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
-            encoding = (encoding + "").toLowerCase();
-            loweredCase = true;
-    }
-}
-// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
-// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
-// reliably in a browserify context because there could be multiple different
-// copies of the 'buffer' package in use. This method works even for Buffer
-// instances that were created from another copy of the `buffer` package.
-// See: https://github.com/feross/buffer/issues/154
-$40a00c8828823352$var$Buffer.prototype._isBuffer = true;
-function $40a00c8828823352$var$swap(b, n, m) {
-    var i = b[n];
-    b[n] = b[m];
-    b[m] = i;
-}
-$40a00c8828823352$var$Buffer.prototype.swap16 = function swap16() {
-    var len = this.length;
-    if (len % 2 !== 0) throw new RangeError("Buffer size must be a multiple of 16-bits");
-    for(var i = 0; i < len; i += 2)$40a00c8828823352$var$swap(this, i, i + 1);
-    return this;
-};
-$40a00c8828823352$var$Buffer.prototype.swap32 = function swap32() {
-    var len = this.length;
-    if (len % 4 !== 0) throw new RangeError("Buffer size must be a multiple of 32-bits");
-    for(var i = 0; i < len; i += 4){
-        $40a00c8828823352$var$swap(this, i, i + 3);
-        $40a00c8828823352$var$swap(this, i + 1, i + 2);
-    }
-    return this;
-};
-$40a00c8828823352$var$Buffer.prototype.swap64 = function swap64() {
-    var len = this.length;
-    if (len % 8 !== 0) throw new RangeError("Buffer size must be a multiple of 64-bits");
-    for(var i = 0; i < len; i += 8){
-        $40a00c8828823352$var$swap(this, i, i + 7);
-        $40a00c8828823352$var$swap(this, i + 1, i + 6);
-        $40a00c8828823352$var$swap(this, i + 2, i + 5);
-        $40a00c8828823352$var$swap(this, i + 3, i + 4);
-    }
-    return this;
-};
-$40a00c8828823352$var$Buffer.prototype.toString = function toString() {
-    var length = this.length;
-    if (length === 0) return "";
-    if (arguments.length === 0) return $40a00c8828823352$var$utf8Slice(this, 0, length);
-    return $40a00c8828823352$var$slowToString.apply(this, arguments);
-};
-$40a00c8828823352$var$Buffer.prototype.toLocaleString = $40a00c8828823352$var$Buffer.prototype.toString;
-$40a00c8828823352$var$Buffer.prototype.equals = function equals(b) {
-    if (!$40a00c8828823352$var$Buffer.isBuffer(b)) throw new TypeError("Argument must be a Buffer");
-    if (this === b) return true;
-    return $40a00c8828823352$var$Buffer.compare(this, b) === 0;
-};
-$40a00c8828823352$var$Buffer.prototype.inspect = function inspect() {
-    var str = "";
-    var max = $40a00c8828823352$export$f99ded8fe4b79145;
-    str = this.toString("hex", 0, max).replace(/(.{2})/g, "$1 ").trim();
-    if (this.length > max) str += " ... ";
-    return "<Buffer " + str + ">";
-};
-if ($40a00c8828823352$var$customInspectSymbol) $40a00c8828823352$var$Buffer.prototype[$40a00c8828823352$var$customInspectSymbol] = $40a00c8828823352$var$Buffer.prototype.inspect;
-$40a00c8828823352$var$Buffer.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
-    if ($40a00c8828823352$var$isInstance(target, Uint8Array)) target = $40a00c8828823352$var$Buffer.from(target, target.offset, target.byteLength);
-    if (!$40a00c8828823352$var$Buffer.isBuffer(target)) throw new TypeError('The "target" argument must be one of type Buffer or Uint8Array. Received type ' + typeof target);
-    if (start === undefined) start = 0;
-    if (end === undefined) end = target ? target.length : 0;
-    if (thisStart === undefined) thisStart = 0;
-    if (thisEnd === undefined) thisEnd = this.length;
-    if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) throw new RangeError("out of range index");
-    if (thisStart >= thisEnd && start >= end) return 0;
-    if (thisStart >= thisEnd) return -1;
-    if (start >= end) return 1;
-    start >>>= 0;
-    end >>>= 0;
-    thisStart >>>= 0;
-    thisEnd >>>= 0;
-    if (this === target) return 0;
-    var x = thisEnd - thisStart;
-    var y = end - start;
-    var len = Math.min(x, y);
-    var thisCopy = this.slice(thisStart, thisEnd);
-    var targetCopy = target.slice(start, end);
-    for(var i = 0; i < len; ++i)if (thisCopy[i] !== targetCopy[i]) {
-        x = thisCopy[i];
-        y = targetCopy[i];
-        break;
-    }
-    if (x < y) return -1;
-    if (y < x) return 1;
-    return 0;
-};
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function $40a00c8828823352$var$bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
-    // Empty buffer means no match
-    if (buffer.length === 0) return -1;
-    // Normalize byteOffset
-    if (typeof byteOffset === "string") {
-        encoding = byteOffset;
-        byteOffset = 0;
-    } else if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff;
-    else if (byteOffset < -2147483648) byteOffset = -2147483648;
-    byteOffset = +byteOffset // Coerce to Number.
-    ;
-    if ($40a00c8828823352$var$numberIsNaN(byteOffset)) // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : buffer.length - 1;
-    // Normalize byteOffset: negative offsets start from the end of the buffer
-    if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-    if (byteOffset >= buffer.length) {
-        if (dir) return -1;
-        else byteOffset = buffer.length - 1;
-    } else if (byteOffset < 0) {
-        if (dir) byteOffset = 0;
-        else return -1;
-    }
-    // Normalize val
-    if (typeof val === "string") val = $40a00c8828823352$var$Buffer.from(val, encoding);
-    // Finally, search either indexOf (if dir is true) or lastIndexOf
-    if ($40a00c8828823352$var$Buffer.isBuffer(val)) {
-        // Special case: looking for empty string/buffer always fails
-        if (val.length === 0) return -1;
-        return $40a00c8828823352$var$arrayIndexOf(buffer, val, byteOffset, encoding, dir);
-    } else if (typeof val === "number") {
-        val = val & 0xFF // Search for a byte value [0-255]
-        ;
-        if (typeof Uint8Array.prototype.indexOf === "function") {
-            if (dir) return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
-            else return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
-        }
-        return $40a00c8828823352$var$arrayIndexOf(buffer, [
-            val
-        ], byteOffset, encoding, dir);
-    }
-    throw new TypeError("val must be string, number or Buffer");
-}
-function $40a00c8828823352$var$arrayIndexOf(arr, val, byteOffset, encoding, dir) {
-    var indexSize = 1;
-    var arrLength = arr.length;
-    var valLength = val.length;
-    if (encoding !== undefined) {
-        encoding = String(encoding).toLowerCase();
-        if (encoding === "ucs2" || encoding === "ucs-2" || encoding === "utf16le" || encoding === "utf-16le") {
-            if (arr.length < 2 || val.length < 2) return -1;
-            indexSize = 2;
-            arrLength /= 2;
-            valLength /= 2;
-            byteOffset /= 2;
-        }
-    }
-    function read(buf, i) {
-        if (indexSize === 1) return buf[i];
-        else return buf.readUInt16BE(i * indexSize);
-    }
-    var i;
-    if (dir) {
-        var foundIndex = -1;
-        for(i = byteOffset; i < arrLength; i++)if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-            if (foundIndex === -1) foundIndex = i;
-            if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
-        } else {
-            if (foundIndex !== -1) i -= i - foundIndex;
-            foundIndex = -1;
-        }
-    } else {
-        if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-        for(i = byteOffset; i >= 0; i--){
-            var found = true;
-            for(var j = 0; j < valLength; j++)if (read(arr, i + j) !== read(val, j)) {
-                found = false;
-                break;
-            }
-            if (found) return i;
-        }
-    }
-    return -1;
-}
-$40a00c8828823352$var$Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
-    return this.indexOf(val, byteOffset, encoding) !== -1;
-};
-$40a00c8828823352$var$Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
-    return $40a00c8828823352$var$bidirectionalIndexOf(this, val, byteOffset, encoding, true);
-};
-$40a00c8828823352$var$Buffer.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
-    return $40a00c8828823352$var$bidirectionalIndexOf(this, val, byteOffset, encoding, false);
-};
-function $40a00c8828823352$var$hexWrite(buf, string, offset, length) {
-    offset = Number(offset) || 0;
-    var remaining = buf.length - offset;
-    if (!length) length = remaining;
-    else {
-        length = Number(length);
-        if (length > remaining) length = remaining;
-    }
-    var strLen = string.length;
-    if (length > strLen / 2) length = strLen / 2;
-    for(var i = 0; i < length; ++i){
-        var parsed = parseInt(string.substr(i * 2, 2), 16);
-        if ($40a00c8828823352$var$numberIsNaN(parsed)) return i;
-        buf[offset + i] = parsed;
-    }
-    return i;
-}
-function $40a00c8828823352$var$utf8Write(buf, string, offset, length) {
-    return $40a00c8828823352$var$blitBuffer($40a00c8828823352$var$utf8ToBytes(string, buf.length - offset), buf, offset, length);
-}
-function $40a00c8828823352$var$asciiWrite(buf, string, offset, length) {
-    return $40a00c8828823352$var$blitBuffer($40a00c8828823352$var$asciiToBytes(string), buf, offset, length);
-}
-function $40a00c8828823352$var$base64Write(buf, string, offset, length) {
-    return $40a00c8828823352$var$blitBuffer($40a00c8828823352$var$base64ToBytes(string), buf, offset, length);
-}
-function $40a00c8828823352$var$ucs2Write(buf, string, offset, length) {
-    return $40a00c8828823352$var$blitBuffer($40a00c8828823352$var$utf16leToBytes(string, buf.length - offset), buf, offset, length);
-}
-$40a00c8828823352$var$Buffer.prototype.write = function write(string, offset, length, encoding) {
-    // Buffer#write(string)
-    if (offset === undefined) {
-        encoding = "utf8";
-        length = this.length;
-        offset = 0;
-    // Buffer#write(string, encoding)
-    } else if (length === undefined && typeof offset === "string") {
-        encoding = offset;
-        length = this.length;
-        offset = 0;
-    // Buffer#write(string, offset[, length][, encoding])
-    } else if (isFinite(offset)) {
-        offset = offset >>> 0;
-        if (isFinite(length)) {
-            length = length >>> 0;
-            if (encoding === undefined) encoding = "utf8";
-        } else {
-            encoding = length;
-            length = undefined;
-        }
-    } else throw new Error("Buffer.write(string, encoding, offset[, length]) is no longer supported");
-    var remaining = this.length - offset;
-    if (length === undefined || length > remaining) length = remaining;
-    if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
-    if (!encoding) encoding = "utf8";
-    var loweredCase = false;
-    for(;;)switch(encoding){
-        case "hex":
-            return $40a00c8828823352$var$hexWrite(this, string, offset, length);
-        case "utf8":
-        case "utf-8":
-            return $40a00c8828823352$var$utf8Write(this, string, offset, length);
-        case "ascii":
-        case "latin1":
-        case "binary":
-            return $40a00c8828823352$var$asciiWrite(this, string, offset, length);
-        case "base64":
-            // Warning: maxLength not taken into account in base64Write
-            return $40a00c8828823352$var$base64Write(this, string, offset, length);
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-            return $40a00c8828823352$var$ucs2Write(this, string, offset, length);
-        default:
-            if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
-    }
-};
-$40a00c8828823352$var$Buffer.prototype.toJSON = function toJSON() {
-    return {
-        type: "Buffer",
-        data: Array.prototype.slice.call(this._arr || this, 0)
-    };
-};
-function $40a00c8828823352$var$base64Slice(buf, start, end) {
-    if (start === 0 && end === buf.length) return $1b962295b9d4704b$export$6100ba28696e12de(buf);
-    else return $1b962295b9d4704b$export$6100ba28696e12de(buf.slice(start, end));
-}
-function $40a00c8828823352$var$utf8Slice(buf, start, end) {
-    end = Math.min(buf.length, end);
-    var res = [];
-    var i = start;
-    while(i < end){
-        var firstByte = buf[i];
-        var codePoint = null;
-        var bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
-        if (i + bytesPerSequence <= end) {
-            var secondByte, thirdByte, fourthByte, tempCodePoint;
-            switch(bytesPerSequence){
-                case 1:
-                    if (firstByte < 0x80) codePoint = firstByte;
-                    break;
-                case 2:
-                    secondByte = buf[i + 1];
-                    if ((secondByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
-                        if (tempCodePoint > 0x7F) codePoint = tempCodePoint;
-                    }
-                    break;
-                case 3:
-                    secondByte = buf[i + 1];
-                    thirdByte = buf[i + 2];
-                    if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
-                        if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) codePoint = tempCodePoint;
-                    }
-                    break;
-                case 4:
-                    secondByte = buf[i + 1];
-                    thirdByte = buf[i + 2];
-                    fourthByte = buf[i + 3];
-                    if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-                        tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
-                        if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) codePoint = tempCodePoint;
-                    }
-            }
-        }
-        if (codePoint === null) {
-            // we did not generate a valid codePoint so insert a
-            // replacement char (U+FFFD) and advance only 1 byte
-            codePoint = 0xFFFD;
-            bytesPerSequence = 1;
-        } else if (codePoint > 0xFFFF) {
-            // encode to utf16 (surrogate pair dance)
-            codePoint -= 0x10000;
-            res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-            codePoint = 0xDC00 | codePoint & 0x3FF;
-        }
-        res.push(codePoint);
-        i += bytesPerSequence;
-    }
-    return $40a00c8828823352$var$decodeCodePointsArray(res);
-}
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var $40a00c8828823352$var$MAX_ARGUMENTS_LENGTH = 0x1000;
-function $40a00c8828823352$var$decodeCodePointsArray(codePoints) {
-    var len = codePoints.length;
-    if (len <= $40a00c8828823352$var$MAX_ARGUMENTS_LENGTH) return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-    ;
-    // Decode in chunks to avoid "call stack size exceeded".
-    var res = "";
-    var i = 0;
-    while(i < len)res += String.fromCharCode.apply(String, codePoints.slice(i, i += $40a00c8828823352$var$MAX_ARGUMENTS_LENGTH));
-    return res;
-}
-function $40a00c8828823352$var$asciiSlice(buf, start, end) {
-    var ret = "";
-    end = Math.min(buf.length, end);
-    for(var i = start; i < end; ++i)ret += String.fromCharCode(buf[i] & 0x7F);
-    return ret;
-}
-function $40a00c8828823352$var$latin1Slice(buf, start, end) {
-    var ret = "";
-    end = Math.min(buf.length, end);
-    for(var i = start; i < end; ++i)ret += String.fromCharCode(buf[i]);
-    return ret;
-}
-function $40a00c8828823352$var$hexSlice(buf, start, end) {
-    var len = buf.length;
-    if (!start || start < 0) start = 0;
-    if (!end || end < 0 || end > len) end = len;
-    var out = "";
-    for(var i = start; i < end; ++i)out += $40a00c8828823352$var$hexSliceLookupTable[buf[i]];
-    return out;
-}
-function $40a00c8828823352$var$utf16leSlice(buf, start, end) {
-    var bytes = buf.slice(start, end);
-    var res = "";
-    // If bytes.length is odd, the last 8 bits must be ignored (same as node.js)
-    for(var i = 0; i < bytes.length - 1; i += 2)res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-    return res;
-}
-$40a00c8828823352$var$Buffer.prototype.slice = function slice(start, end) {
-    var len = this.length;
-    start = ~~start;
-    end = end === undefined ? len : ~~end;
-    if (start < 0) {
-        start += len;
-        if (start < 0) start = 0;
-    } else if (start > len) start = len;
-    if (end < 0) {
-        end += len;
-        if (end < 0) end = 0;
-    } else if (end > len) end = len;
-    if (end < start) end = start;
-    var newBuf = this.subarray(start, end);
-    // Return an augmented `Uint8Array` instance
-    Object.setPrototypeOf(newBuf, $40a00c8828823352$var$Buffer.prototype);
-    return newBuf;
-};
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */ function $40a00c8828823352$var$checkOffset(offset, ext, length) {
-    if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
-    if (offset + ext > length) throw new RangeError("Trying to access beyond buffer length");
-}
-$40a00c8828823352$var$Buffer.prototype.readUintLE = $40a00c8828823352$var$Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, byteLength, this.length);
-    var val = this[offset];
-    var mul = 1;
-    var i = 0;
-    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
-    return val;
-};
-$40a00c8828823352$var$Buffer.prototype.readUintBE = $40a00c8828823352$var$Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, byteLength, this.length);
-    var val = this[offset + --byteLength];
-    var mul = 1;
-    while(byteLength > 0 && (mul *= 0x100))val += this[offset + --byteLength] * mul;
-    return val;
-};
-$40a00c8828823352$var$Buffer.prototype.readUint8 = $40a00c8828823352$var$Buffer.prototype.readUInt8 = function readUInt8(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 1, this.length);
-    return this[offset];
-};
-$40a00c8828823352$var$Buffer.prototype.readUint16LE = $40a00c8828823352$var$Buffer.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 2, this.length);
-    return this[offset] | this[offset + 1] << 8;
-};
-$40a00c8828823352$var$Buffer.prototype.readUint16BE = $40a00c8828823352$var$Buffer.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 2, this.length);
-    return this[offset] << 8 | this[offset + 1];
-};
-$40a00c8828823352$var$Buffer.prototype.readUint32LE = $40a00c8828823352$var$Buffer.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
-};
-$40a00c8828823352$var$Buffer.prototype.readUint32BE = $40a00c8828823352$var$Buffer.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
-};
-$40a00c8828823352$var$Buffer.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, byteLength, this.length);
-    var val = this[offset];
-    var mul = 1;
-    var i = 0;
-    while(++i < byteLength && (mul *= 0x100))val += this[offset + i] * mul;
-    mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-    return val;
-};
-$40a00c8828823352$var$Buffer.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, byteLength, this.length);
-    var i = byteLength;
-    var mul = 1;
-    var val = this[offset + --i];
-    while(i > 0 && (mul *= 0x100))val += this[offset + --i] * mul;
-    mul *= 0x80;
-    if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-    return val;
-};
-$40a00c8828823352$var$Buffer.prototype.readInt8 = function readInt8(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 1, this.length);
-    if (!(this[offset] & 0x80)) return this[offset];
-    return (0xff - this[offset] + 1) * -1;
-};
-$40a00c8828823352$var$Buffer.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 2, this.length);
-    var val = this[offset] | this[offset + 1] << 8;
-    return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-$40a00c8828823352$var$Buffer.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 2, this.length);
-    var val = this[offset + 1] | this[offset] << 8;
-    return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-$40a00c8828823352$var$Buffer.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
-};
-$40a00c8828823352$var$Buffer.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
-};
-$40a00c8828823352$var$Buffer.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return $d2f9e2fe5bb754ad$export$aafa59e2e03f2942(this, offset, true, 23, 4);
-};
-$40a00c8828823352$var$Buffer.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 4, this.length);
-    return $d2f9e2fe5bb754ad$export$aafa59e2e03f2942(this, offset, false, 23, 4);
-};
-$40a00c8828823352$var$Buffer.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 8, this.length);
-    return $d2f9e2fe5bb754ad$export$aafa59e2e03f2942(this, offset, true, 52, 8);
-};
-$40a00c8828823352$var$Buffer.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkOffset(offset, 8, this.length);
-    return $d2f9e2fe5bb754ad$export$aafa59e2e03f2942(this, offset, false, 52, 8);
-};
-function $40a00c8828823352$var$checkInt(buf, value, offset, ext, max, min) {
-    if (!$40a00c8828823352$var$Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
-    if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
-    if (offset + ext > buf.length) throw new RangeError("Index out of range");
-}
-$40a00c8828823352$var$Buffer.prototype.writeUintLE = $40a00c8828823352$var$Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) {
-        var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-        $40a00c8828823352$var$checkInt(this, value, offset, byteLength, maxBytes, 0);
-    }
-    var mul = 1;
-    var i = 0;
-    this[offset] = value & 0xFF;
-    while(++i < byteLength && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUintBE = $40a00c8828823352$var$Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    byteLength = byteLength >>> 0;
-    if (!noAssert) {
-        var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-        $40a00c8828823352$var$checkInt(this, value, offset, byteLength, maxBytes, 0);
-    }
-    var i = byteLength - 1;
-    var mul = 1;
-    this[offset + i] = value & 0xFF;
-    while(--i >= 0 && (mul *= 0x100))this[offset + i] = value / mul & 0xFF;
-    return offset + byteLength;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUint8 = $40a00c8828823352$var$Buffer.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 1, 0xff, 0);
-    this[offset] = value & 0xff;
-    return offset + 1;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUint16LE = $40a00c8828823352$var$Buffer.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 2, 0xffff, 0);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    return offset + 2;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUint16BE = $40a00c8828823352$var$Buffer.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 2, 0xffff, 0);
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-    return offset + 2;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUint32LE = $40a00c8828823352$var$Buffer.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 4, 0xffffffff, 0);
-    this[offset + 3] = value >>> 24;
-    this[offset + 2] = value >>> 16;
-    this[offset + 1] = value >>> 8;
-    this[offset] = value & 0xff;
-    return offset + 4;
-};
-$40a00c8828823352$var$Buffer.prototype.writeUint32BE = $40a00c8828823352$var$Buffer.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 4, 0xffffffff, 0);
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-    return offset + 4;
-};
-$40a00c8828823352$var$Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) {
-        var limit = Math.pow(2, 8 * byteLength - 1);
-        $40a00c8828823352$var$checkInt(this, value, offset, byteLength, limit - 1, -limit);
-    }
-    var i = 0;
-    var mul = 1;
-    var sub = 0;
-    this[offset] = value & 0xFF;
-    while(++i < byteLength && (mul *= 0x100)){
-        if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) sub = 1;
-        this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-    }
-    return offset + byteLength;
-};
-$40a00c8828823352$var$Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) {
-        var limit = Math.pow(2, 8 * byteLength - 1);
-        $40a00c8828823352$var$checkInt(this, value, offset, byteLength, limit - 1, -limit);
-    }
-    var i = byteLength - 1;
-    var mul = 1;
-    var sub = 0;
-    this[offset + i] = value & 0xFF;
-    while(--i >= 0 && (mul *= 0x100)){
-        if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) sub = 1;
-        this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-    }
-    return offset + byteLength;
-};
-$40a00c8828823352$var$Buffer.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 1, 0x7f, -128);
-    if (value < 0) value = 0xff + value + 1;
-    this[offset] = value & 0xff;
-    return offset + 1;
-};
-$40a00c8828823352$var$Buffer.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 2, 0x7fff, -32768);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    return offset + 2;
-};
-$40a00c8828823352$var$Buffer.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 2, 0x7fff, -32768);
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-    return offset + 2;
-};
-$40a00c8828823352$var$Buffer.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 4, 0x7fffffff, -2147483648);
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    this[offset + 2] = value >>> 16;
-    this[offset + 3] = value >>> 24;
-    return offset + 4;
-};
-$40a00c8828823352$var$Buffer.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkInt(this, value, offset, 4, 0x7fffffff, -2147483648);
-    if (value < 0) value = 0xffffffff + value + 1;
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-    return offset + 4;
-};
-function $40a00c8828823352$var$checkIEEE754(buf, value, offset, ext, max, min) {
-    if (offset + ext > buf.length) throw new RangeError("Index out of range");
-    if (offset < 0) throw new RangeError("Index out of range");
-}
-function $40a00c8828823352$var$writeFloat(buf, value, offset, littleEndian, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -340282346638528860000000000000000000000);
-    $d2f9e2fe5bb754ad$export$68d8715fc104d294(buf, value, offset, littleEndian, 23, 4);
-    return offset + 4;
-}
-$40a00c8828823352$var$Buffer.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
-    return $40a00c8828823352$var$writeFloat(this, value, offset, true, noAssert);
-};
-$40a00c8828823352$var$Buffer.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
-    return $40a00c8828823352$var$writeFloat(this, value, offset, false, noAssert);
-};
-function $40a00c8828823352$var$writeDouble(buf, value, offset, littleEndian, noAssert) {
-    value = +value;
-    offset = offset >>> 0;
-    if (!noAssert) $40a00c8828823352$var$checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000);
-    $d2f9e2fe5bb754ad$export$68d8715fc104d294(buf, value, offset, littleEndian, 52, 8);
-    return offset + 8;
-}
-$40a00c8828823352$var$Buffer.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
-    return $40a00c8828823352$var$writeDouble(this, value, offset, true, noAssert);
-};
-$40a00c8828823352$var$Buffer.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
-    return $40a00c8828823352$var$writeDouble(this, value, offset, false, noAssert);
-};
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-$40a00c8828823352$var$Buffer.prototype.copy = function copy(target, targetStart, start, end) {
-    if (!$40a00c8828823352$var$Buffer.isBuffer(target)) throw new TypeError("argument should be a Buffer");
-    if (!start) start = 0;
-    if (!end && end !== 0) end = this.length;
-    if (targetStart >= target.length) targetStart = target.length;
-    if (!targetStart) targetStart = 0;
-    if (end > 0 && end < start) end = start;
-    // Copy 0 bytes; we're done
-    if (end === start) return 0;
-    if (target.length === 0 || this.length === 0) return 0;
-    // Fatal error conditions
-    if (targetStart < 0) throw new RangeError("targetStart out of bounds");
-    if (start < 0 || start >= this.length) throw new RangeError("Index out of range");
-    if (end < 0) throw new RangeError("sourceEnd out of bounds");
-    // Are we oob?
-    if (end > this.length) end = this.length;
-    if (target.length - targetStart < end - start) end = target.length - targetStart + start;
-    var len = end - start;
-    if (this === target && typeof Uint8Array.prototype.copyWithin === "function") // Use built-in when available, missing from IE11
-    this.copyWithin(targetStart, start, end);
-    else Uint8Array.prototype.set.call(target, this.subarray(start, end), targetStart);
-    return len;
-};
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-$40a00c8828823352$var$Buffer.prototype.fill = function fill(val, start, end, encoding) {
-    // Handle string cases:
-    if (typeof val === "string") {
-        if (typeof start === "string") {
-            encoding = start;
-            start = 0;
-            end = this.length;
-        } else if (typeof end === "string") {
-            encoding = end;
-            end = this.length;
-        }
-        if (encoding !== undefined && typeof encoding !== "string") throw new TypeError("encoding must be a string");
-        if (typeof encoding === "string" && !$40a00c8828823352$var$Buffer.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
-        if (val.length === 1) {
-            var code = val.charCodeAt(0);
-            if (encoding === "utf8" && code < 128 || encoding === "latin1") // Fast path: If `val` fits into a single byte, use that numeric value.
-            val = code;
-        }
-    } else if (typeof val === "number") val = val & 255;
-    else if (typeof val === "boolean") val = Number(val);
-    // Invalid ranges are not set to a default, so can range check early.
-    if (start < 0 || this.length < start || this.length < end) throw new RangeError("Out of range index");
-    if (end <= start) return this;
-    start = start >>> 0;
-    end = end === undefined ? this.length : end >>> 0;
-    if (!val) val = 0;
-    var i;
-    if (typeof val === "number") for(i = start; i < end; ++i)this[i] = val;
-    else {
-        var bytes = $40a00c8828823352$var$Buffer.isBuffer(val) ? val : $40a00c8828823352$var$Buffer.from(val, encoding);
-        var len = bytes.length;
-        if (len === 0) throw new TypeError('The value "' + val + '" is invalid for argument "value"');
-        for(i = 0; i < end - start; ++i)this[i + start] = bytes[i % len];
-    }
-    return this;
-};
-// HELPER FUNCTIONS
-// ================
-var $40a00c8828823352$var$INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
-function $40a00c8828823352$var$base64clean(str) {
-    // Node takes equal signs as end of the Base64 encoding
-    str = str.split("=")[0];
-    // Node strips out invalid characters like \n and \t from the string, base64-js does not
-    str = str.trim().replace($40a00c8828823352$var$INVALID_BASE64_RE, "");
-    // Node converts strings with length < 2 to ''
-    if (str.length < 2) return "";
-    // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-    while(str.length % 4 !== 0)str = str + "=";
-    return str;
-}
-function $40a00c8828823352$var$utf8ToBytes(string, units) {
-    units = units || Infinity;
-    var codePoint;
-    var length = string.length;
-    var leadSurrogate = null;
-    var bytes = [];
-    for(var i = 0; i < length; ++i){
-        codePoint = string.charCodeAt(i);
-        // is surrogate component
-        if (codePoint > 0xD7FF && codePoint < 0xE000) {
-            // last char was a lead
-            if (!leadSurrogate) {
-                // no lead yet
-                if (codePoint > 0xDBFF) {
-                    // unexpected trail
-                    if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                    continue;
-                } else if (i + 1 === length) {
-                    // unpaired lead
-                    if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                    continue;
-                }
-                // valid lead
-                leadSurrogate = codePoint;
-                continue;
-            }
-            // 2 leads in a row
-            if (codePoint < 0xDC00) {
-                if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-                leadSurrogate = codePoint;
-                continue;
-            }
-            // valid surrogate pair
-            codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-        } else if (leadSurrogate) // valid bmp char, but last char was a lead
-        {
-            if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        }
-        leadSurrogate = null;
-        // encode utf8
-        if (codePoint < 0x80) {
-            if ((units -= 1) < 0) break;
-            bytes.push(codePoint);
-        } else if (codePoint < 0x800) {
-            if ((units -= 2) < 0) break;
-            bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
-        } else if (codePoint < 0x10000) {
-            if ((units -= 3) < 0) break;
-            bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-        } else if (codePoint < 0x110000) {
-            if ((units -= 4) < 0) break;
-            bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-        } else throw new Error("Invalid code point");
-    }
-    return bytes;
-}
-function $40a00c8828823352$var$asciiToBytes(str) {
-    var byteArray = [];
-    for(var i = 0; i < str.length; ++i)// Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-    return byteArray;
-}
-function $40a00c8828823352$var$utf16leToBytes(str, units) {
-    var c, hi, lo;
-    var byteArray = [];
-    for(var i = 0; i < str.length; ++i){
-        if ((units -= 2) < 0) break;
-        c = str.charCodeAt(i);
-        hi = c >> 8;
-        lo = c % 256;
-        byteArray.push(lo);
-        byteArray.push(hi);
-    }
-    return byteArray;
-}
-function $40a00c8828823352$var$base64ToBytes(str) {
-    return $1b962295b9d4704b$export$d622b2ad8d90c771($40a00c8828823352$var$base64clean(str));
-}
-function $40a00c8828823352$var$blitBuffer(src, dst, offset, length) {
-    for(var i = 0; i < length; ++i){
-        if (i + offset >= dst.length || i >= src.length) break;
-        dst[i + offset] = src[i];
-    }
-    return i;
-}
-// ArrayBuffer or Uint8Array objects from other contexts (i.e. iframes) do not pass
-// the `instanceof` check but they should be treated as of that type.
-// See: https://github.com/feross/buffer/issues/166
-function $40a00c8828823352$var$isInstance(obj, type) {
-    return obj instanceof type || obj != null && obj.constructor != null && obj.constructor.name != null && obj.constructor.name === type.name;
-}
-function $40a00c8828823352$var$numberIsNaN(obj) {
-    // For IE11 support
-    return obj !== obj // eslint-disable-line no-self-compare
-    ;
-}
-// Create lookup table for `toString('hex')`
-// See: https://github.com/feross/buffer/issues/219
-var $40a00c8828823352$var$hexSliceLookupTable = function() {
-    var alphabet = "0123456789abcdef";
-    var table = new Array(256);
-    for(var i = 0; i < 16; ++i){
-        var i16 = i * 16;
-        for(var j = 0; j < 16; ++j)table[i16 + j] = alphabet[i] + alphabet[j];
-    }
-    return table;
-}();
-
-
-var $45ec30e66bc4f018$require$Buffer = $40a00c8828823352$export$a143d493d941bafc;
 
 
 
@@ -7088,11 +5595,7 @@ var $45ec30e66bc4f018$require$Buffer = $40a00c8828823352$export$a143d493d941bafc
 
 
 
-/**
- * Return the chip ROM based on the given magic number
- * @param {number} magic - magic hex number to select ROM.
- * @returns {ROM} The chip ROM class related to given magic hex number.
- */ async function $45ec30e66bc4f018$var$magic2Chip(magic) {
+async function $45ec30e66bc4f018$var$magic2Chip(magic) {
     switch(magic){
         case 0x00f01d83:
             {
@@ -7135,14 +5638,7 @@ var $45ec30e66bc4f018$require$Buffer = $40a00c8828823352$export$a143d493d941bafc
     }
 }
 class $45ec30e66bc4f018$export$b0f7a6c745790308 {
-    /**
-     * Create a new ESPLoader to perform serial communication
-     * such as read/write flash memory and registers using a LoaderOptions object.
-     * @param {LoaderOptions} options - LoaderOptions object argument for ESPLoader.
-     * ```
-     * const myLoader = new ESPLoader({ transport: Transport, baudrate: number, terminal?: IEspLoaderTerminal });
-     * ```
-     */ constructor(options){
+    constructor(options){
         this.ESP_RAM_BLOCK = 0x1800;
         this.ESP_FLASH_BEGIN = 0x02;
         this.ESP_FLASH_DATA = 0x03;
@@ -7195,35 +5691,22 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         this.USB_JTAG_SERIAL_PID = 0x1001;
         this.romBaudrate = 115200;
         this.debugLogging = false;
-        /**
-         * Get the checksum for given unsigned 8-bit array
-         * @param {Uint8Array} data Unsigned 8-bit integer array
-         * @returns {number} - Array checksum
-         */ this.checksum = function(data) {
+        this.checksum = function(data) {
             let i;
             let chk = 0xef;
             for(i = 0; i < data.length; i++)chk ^= data[i];
             return chk;
         };
-        /**
-         * Scale timeouts which are size-specific.
-         * @param {number} secondsPerMb Seconds per megabytes as number
-         * @param {number} sizeBytes Size bytes number
-         * @returns {number} - Scaled timeout for specified size.
-         */ this.timeoutPerMb = function(secondsPerMb, sizeBytes) {
-            const result = secondsPerMb * (sizeBytes / 1000000);
+        this.timeout_per_mb = function(seconds_per_mb, size_bytes) {
+            const result = seconds_per_mb * (size_bytes / 1000000);
             if (result < 3000) return 3000;
             else return result;
         };
-        /**
-         * Get flash size bytes from flash size string.
-         * @param {string} flashSize Flash Size string
-         * @returns {number} Flash size bytes
-         */ this.flashSizeBytes = function(flashSize) {
-            let flashSizeB = -1;
-            if (flashSize.indexOf("KB") !== -1) flashSizeB = parseInt(flashSize.slice(0, flashSize.indexOf("KB"))) * 1024;
-            else if (flashSize.indexOf("MB") !== -1) flashSizeB = parseInt(flashSize.slice(0, flashSize.indexOf("MB"))) * 1048576;
-            return flashSizeB;
+        this.flash_size_bytes = function(flash_size) {
+            let flash_size_b = -1;
+            if (flash_size.indexOf("KB") !== -1) flash_size_b = parseInt(flash_size.slice(0, flash_size.indexOf("KB"))) * 1024;
+            else if (flash_size.indexOf("MB") !== -1) flash_size_b = parseInt(flash_size.slice(0, flash_size.indexOf("MB"))) * 1048576;
+            return flash_size_b;
         };
         this.IS_STUB = false;
         this.FLASH_WRITE_SIZE = 0x4000;
@@ -7238,58 +5721,34 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         if (options.debugLogging) this.debugLogging = options.debugLogging;
         if (options.port) this.transport = new (0, $a0cf3cac0d21f701$export$86495b081fef8e52)(options.port);
         this.info("esptool.js");
-        this.info("Serial port " + this.transport.getInfo());
+        this.info("Serial port " + this.transport.get_info());
     }
     _sleep(ms) {
         return new Promise((resolve)=>setTimeout(resolve, ms));
     }
-    /**
-     * Write to ESP Loader constructor's terminal with or without new line.
-     * @param {string} str - String to write.
-     * @param {boolean} withNewline - Add new line at the end ?
-     */ write(str, withNewline = true) {
+    write(str, withNewline = true) {
         if (this.terminal) {
             if (withNewline) this.terminal.writeLine(str);
             else this.terminal.write(str);
         } else // eslint-disable-next-line no-console
         console.log(str);
     }
-    /**
-     * Write error message to ESP Loader constructor's terminal with or without new line.
-     * @param {string} str - String to write.
-     * @param {boolean} withNewline - Add new line at the end ?
-     */ error(str, withNewline = true) {
+    error(str, withNewline = true) {
         this.write(`Error: ${str}`, withNewline);
     }
-    /**
-     * Write information message to ESP Loader constructor's terminal with or without new line.
-     * @param {string} str - String to write.
-     * @param {boolean} withNewline - Add new line at the end ?
-     */ info(str, withNewline = true) {
+    info(str, withNewline = true) {
         this.write(str, withNewline);
     }
-    /**
-     * Write debug message to ESP Loader constructor's terminal with or without new line.
-     * @param {string} str - String to write.
-     * @param {boolean} withNewline - Add new line at the end ?
-     */ debug(str, withNewline = true) {
+    debug(str, withNewline = true) {
         if (this.debugLogging) this.write(`Debug: ${str}`, withNewline);
     }
-    /**
-     * Convert short integer to byte array
-     * @param {number} i - Number to convert.
-     * @returns {Uint8Array} Byte array.
-     */ _shortToBytearray(i) {
+    _short_to_bytearray(i) {
         return new Uint8Array([
             i & 0xff,
             i >> 8 & 0xff
         ]);
     }
-    /**
-     * Convert an integer to byte array
-     * @param {number} i - Number to convert.
-     * @returns {ROM} The chip ROM class related to given magic hex number.
-     */ _intToByteArray(i) {
+    _int_to_bytearray(i) {
         return new Uint8Array([
             i & 0xff,
             i >> 8 & 0xff,
@@ -7297,118 +5756,73 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             i >> 24 & 0xff
         ]);
     }
-    /**
-     * Convert a byte array to short integer.
-     * @param {number} i - Number to convert.
-     * @param {number} j - Number to convert.
-     * @returns {number} Return a short integer number.
-     */ _byteArrayToShort(i, j) {
+    _bytearray_to_short(i, j) {
         return i | j >> 8;
     }
-    /**
-     * Convert a byte array to integer.
-     * @param {number} i - Number to convert.
-     * @param {number} j - Number to convert.
-     * @param {number} k - Number to convert.
-     * @param {number} l - Number to convert.
-     * @returns {number} Return a integer number.
-     */ _byteArrayToInt(i, j, k, l) {
+    _bytearray_to_int(i, j, k, l) {
         return i | j << 8 | k << 16 | l << 24;
     }
-    /**
-     * Append a buffer array after another buffer array
-     * @param {ArrayBuffer} buffer1 - First array buffer.
-     * @param {ArrayBuffer} buffer2 - magic hex number to select ROM.
-     * @returns {ArrayBufferLike} Return an array buffer.
-     */ _appendBuffer(buffer1, buffer2) {
+    _appendBuffer(buffer1, buffer2) {
         const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
         tmp.set(new Uint8Array(buffer1), 0);
         tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
         return tmp.buffer;
     }
-    /**
-     * Append a buffer array after another buffer array
-     * @param {Uint8Array} arr1 - First array buffer.
-     * @param {Uint8Array} arr2 - magic hex number to select ROM.
-     * @returns {Uint8Array} Return a 8 bit unsigned array.
-     */ _appendArray(arr1, arr2) {
+    _appendArray(arr1, arr2) {
         const c = new Uint8Array(arr1.length + arr2.length);
         c.set(arr1, 0);
         c.set(arr2, arr1.length);
         return c;
     }
-    /**
-     * Convert a unsigned 8 bit integer array to byte string.
-     * @param {Uint8Array} u8Array - magic hex number to select ROM.
-     * @returns {string} Return the equivalent string.
-     */ ui8ToBstr(u8Array) {
-        let bStr = "";
-        for(let i = 0; i < u8Array.length; i++)bStr += String.fromCharCode(u8Array[i]);
-        return bStr;
+    ui8ToBstr(u8Array) {
+        let b_str = "";
+        for(let i = 0; i < u8Array.length; i++)b_str += String.fromCharCode(u8Array[i]);
+        return b_str;
     }
-    /**
-     * Convert a byte string to unsigned 8 bit integer array.
-     * @param {string} bStr - binary string input
-     * @returns {Uint8Array} Return a 8 bit unsigned integer array.
-     */ bstrToUi8(bStr) {
-        const u8Array = new Uint8Array(bStr.length);
-        for(let i = 0; i < bStr.length; i++)u8Array[i] = bStr.charCodeAt(i);
-        return u8Array;
+    bstrToUi8(bStr) {
+        const u8_array = new Uint8Array(bStr.length);
+        for(let i = 0; i < bStr.length; i++)u8_array[i] = bStr.charCodeAt(i);
+        return u8_array;
     }
-    /**
-     * Flush the serial input by raw read with 200 ms timeout.
-     */ async flushInput() {
+    async flush_input() {
         try {
             await this.transport.rawRead(200);
         } catch (e) {
             this.error(e.message);
         }
     }
-    /**
-     * Use the device serial port read function with given timeout to create a valid packet.
-     * @param {number} op Operation number
-     * @param {number} timeout timeout number in milliseconds
-     * @returns {[number, Uint8Array]} valid response packet.
-     */ async readPacket(op = null, timeout = 3000) {
+    async read_packet(op = null, timeout = 3000) {
         // Check up-to next 100 packets for valid response packet
         for(let i = 0; i < 100; i++){
             const p = await this.transport.read(timeout);
             const resp = p[0];
-            const opRet = p[1];
-            const val = this._byteArrayToInt(p[4], p[5], p[6], p[7]);
+            const op_ret = p[1];
+            const val = this._bytearray_to_int(p[4], p[5], p[6], p[7]);
             const data = p.slice(8);
             if (resp == 1) {
-                if (op == null || opRet == op) return [
+                if (op == null || op_ret == op) return [
                     val,
                     data
                 ];
                 else if (data[0] != 0 && data[1] == this.ROM_INVALID_RECV_MSG) {
-                    await this.flushInput();
+                    await this.flush_input();
                     throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("unsupported command error");
                 }
             }
         }
         throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("invalid response");
     }
-    /**
-     * Write a serial command to the chip
-     * @param {number} op - Operation number
-     * @param {Uint8Array} data - Unsigned 8 bit array
-     * @param {number} chk - channel number
-     * @param {boolean} waitResponse - wait for response ?
-     * @param {number} timeout - timeout number in milliseconds
-     * @returns {Promise<[number, Uint8Array]>} Return a number and a 8 bit unsigned integer array.
-     */ async command(op = null, data = new Uint8Array(0), chk = 0, waitResponse = true, timeout = 3000) {
+    async command(op = null, data = new Uint8Array(0), chk = 0, waitResponse = true, timeout = 3000) {
         if (op != null) {
             const pkt = new Uint8Array(8 + data.length);
             pkt[0] = 0x00;
             pkt[1] = op;
-            pkt[2] = this._shortToBytearray(data.length)[0];
-            pkt[3] = this._shortToBytearray(data.length)[1];
-            pkt[4] = this._intToByteArray(chk)[0];
-            pkt[5] = this._intToByteArray(chk)[1];
-            pkt[6] = this._intToByteArray(chk)[2];
-            pkt[7] = this._intToByteArray(chk)[3];
+            pkt[2] = this._short_to_bytearray(data.length)[0];
+            pkt[3] = this._short_to_bytearray(data.length)[1];
+            pkt[4] = this._int_to_bytearray(chk)[0];
+            pkt[5] = this._int_to_bytearray(chk)[1];
+            pkt[6] = this._int_to_bytearray(chk)[2];
+            pkt[7] = this._int_to_bytearray(chk)[3];
             let i;
             for(i = 0; i < data.length; i++)pkt[8 + i] = data[i];
             await this.transport.write(pkt);
@@ -7417,41 +5831,26 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             0,
             new Uint8Array(0)
         ];
-        return this.readPacket(op, timeout);
+        return this.read_packet(op, timeout);
     }
-    /**
-     * Read a register from chip.
-     * @param {number} addr - Register address number
-     * @param {number} timeout - Timeout in milliseconds (Default: 3000ms)
-     * @returns {number} - Command number value
-     */ async readReg(addr, timeout = 3000) {
-        const pkt = this._intToByteArray(addr);
+    async read_reg(addr, timeout = 3000) {
+        const pkt = this._int_to_bytearray(addr);
         const val = await this.command(this.ESP_READ_REG, pkt, undefined, undefined, timeout);
         return val[0];
     }
-    /**
-     * Write a number value to register address in chip.
-     * @param {number} addr - Register address number
-     * @param {number} value - Number value to write in register
-     * @param {number} mask - Hex number for mask
-     * @param {number} delayUs Delay number
-     * @param {number} delayAfterUs Delay after previous delay
-     */ async writeReg(addr, value, mask = 0xffffffff, delayUs = 0, delayAfterUs = 0) {
-        let pkt = this._appendArray(this._intToByteArray(addr), this._intToByteArray(value));
-        pkt = this._appendArray(pkt, this._intToByteArray(mask));
-        pkt = this._appendArray(pkt, this._intToByteArray(delayUs));
-        if (delayAfterUs > 0) {
-            pkt = this._appendArray(pkt, this._intToByteArray(this.chip.UART_DATE_REG_ADDR));
-            pkt = this._appendArray(pkt, this._intToByteArray(0));
-            pkt = this._appendArray(pkt, this._intToByteArray(0));
-            pkt = this._appendArray(pkt, this._intToByteArray(delayAfterUs));
+    async write_reg(addr, value, mask = 0xffffffff, delay_us = 0, delay_after_us = 0) {
+        let pkt = this._appendArray(this._int_to_bytearray(addr), this._int_to_bytearray(value));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(mask));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(delay_us));
+        if (delay_after_us > 0) {
+            pkt = this._appendArray(pkt, this._int_to_bytearray(this.chip.UART_DATE_REG_ADDR));
+            pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+            pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+            pkt = this._appendArray(pkt, this._int_to_bytearray(delay_after_us));
         }
-        await this.checkCommand("write target memory", this.ESP_WRITE_REG, pkt);
+        await this.check_command("write target memory", this.ESP_WRITE_REG, pkt);
     }
-    /**
-     * Sync chip by sending sync command.
-     * @returns {[number, Uint8Array]} Command result
-     */ async sync() {
+    async sync() {
         this.debug("Sync");
         const cmd = new Uint8Array(36);
         let i;
@@ -7468,19 +5867,14 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             throw e;
         }
     }
-    /**
-     * Attempt to connect to the chip by sending a reset sequence and later a sync command.
-     * @param {string} mode - Reset mode to use
-     * @param {boolean} esp32r0Delay - Enable delay for ESP32 R0
-     * @returns {string} - Returns 'success' or 'error' message.
-     */ async _connectAttempt(mode = "default_reset", esp32r0Delay = false) {
-        this.debug("_connect_attempt " + mode + " " + esp32r0Delay);
+    async _connect_attempt(mode = "default_reset", esp32r0_delay = false) {
+        this.debug("_connect_attempt " + mode + " " + esp32r0_delay);
         if (mode !== "no_reset") {
-            if (this.transport.getPid() === this.USB_JTAG_SERIAL_PID) // Custom reset sequence, which is required when the device
+            if (this.transport.get_pid() === this.USB_JTAG_SERIAL_PID) // Custom reset sequence, which is required when the device
             // is connecting via its USB-JTAG-Serial peripheral
             await (0, $566461229c0b5a39$export$3252bdf5627aa8a3)(this.transport);
             else {
-                const strSequence = esp32r0Delay ? "D0|R1|W100|W2000|D1|R0|W50|D0" : "D0|R1|W100|D1|R0|W50|D0";
+                const strSequence = esp32r0_delay ? "D0|R1|W100|W2000|D1|R0|W50|D0" : "D0|R1|W100|D1|R0|W50|D0";
                 await (0, $566461229c0b5a39$export$e5e6796b349bcc84)(this.transport, strSequence);
             }
         }
@@ -7499,7 +5893,7 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             }
             await this._sleep(50);
         }
-        this.transport.slipReaderEnabled = true;
+        this.transport.slip_reader_enabled = true;
         i = 7;
         while(i--){
             try {
@@ -7508,7 +5902,7 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
                 return "success";
             } catch (error) {
                 if (error instanceof Error) {
-                    if (esp32r0Delay) this.info("_", false);
+                    if (esp32r0_delay) this.info("_", false);
                     else this.info(".", false);
                 }
             }
@@ -7516,204 +5910,131 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         }
         return "error";
     }
-    /**
-     * Perform a connection to chip.
-     * @param {string} mode - Reset mode to use. Example: 'default_reset' | 'no_reset'
-     * @param {number} attempts - Number of connection attempts
-     * @param {boolean} detecting - Detect the connected chip
-     */ async connect(mode = "default_reset", attempts = 7, detecting = false) {
+    async connect(mode = "default_reset", attempts = 7, detecting = false) {
         let i;
         let resp;
         this.info("Connecting...", false);
         await this.transport.connect(this.romBaudrate, this.serialOptions);
         for(i = 0; i < attempts; i++){
-            resp = await this._connectAttempt(mode, false);
+            resp = await this._connect_attempt(mode, false);
             if (resp === "success") break;
-            resp = await this._connectAttempt(mode, true);
+            resp = await this._connect_attempt(mode, true);
             if (resp === "success") break;
         }
         if (resp !== "success") throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Failed to connect with the device");
         this.info("\n\r", false);
         if (!detecting) {
-            const chipMagicValue = await this.readReg(0x40001000) >>> 0;
-            this.info("Chip Magic " + chipMagicValue.toString(16));
-            const chip = await $45ec30e66bc4f018$var$magic2Chip(chipMagicValue);
-            if (this.chip === null) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)(`Unexpected CHIP magic value ${chipMagicValue}. Failed to autodetect chip type.`);
+            const chip_magic_value = await this.read_reg(0x40001000) >>> 0;
+            this.debug("Chip Magic " + chip_magic_value.toString(16));
+            const chip = await $45ec30e66bc4f018$var$magic2Chip(chip_magic_value);
+            if (this.chip === null) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)(`Unexpected CHIP magic value ${chip_magic_value}. Failed to autodetect chip type.`);
             else this.chip = chip;
         }
     }
-    /**
-     * Connect and detect the existing chip.
-     * @param {string} mode Reset mode to use for connection.
-     */ async detectChip(mode = "default_reset") {
+    async detect_chip(mode = "default_reset") {
         await this.connect(mode);
-        this.info("Detecting ESP chip type... ", false);
+        this.info("Detecting chip type... ", false);
         if (this.chip != null) this.info(this.chip.CHIP_NAME);
         else this.info("unknown!");
     }
-    /**
-     * Execute the command and check the command response.
-     * @param {string} opDescription Command operation description.
-     * @param {number} op Command operation number
-     * @param {Uint8Array} data Command value
-     * @param {number} chk Checksum to use
-     * @param {number} timeout TImeout number in milliseconds (ms)
-     * @returns {number} Command result
-     */ async checkCommand(opDescription = "", op = null, data = new Uint8Array(0), chk = 0, timeout = 3000) {
-        this.debug("check_command " + opDescription);
+    async check_command(op_description = "", op = null, data = new Uint8Array(0), chk = 0, timeout = 3000) {
+        this.debug("check_command " + op_description);
         const resp = await this.command(op, data, chk, undefined, timeout);
         if (resp[1].length > 4) return resp[1];
         else return resp[0];
     }
-    /**
-     * Start downloading an application image to RAM
-     * @param {number} size Image size number
-     * @param {number} blocks Number of data blocks
-     * @param {number} blocksize Size of each data block
-     * @param {number} offset Image offset number
-     */ async memBegin(size, blocks, blocksize, offset) {
+    async mem_begin(size, blocks, blocksize, offset) {
         /* XXX: Add check to ensure that STUB is not getting overwritten */ this.debug("mem_begin " + size + " " + blocks + " " + blocksize + " " + offset.toString(16));
-        let pkt = this._appendArray(this._intToByteArray(size), this._intToByteArray(blocks));
-        pkt = this._appendArray(pkt, this._intToByteArray(blocksize));
-        pkt = this._appendArray(pkt, this._intToByteArray(offset));
-        await this.checkCommand("enter RAM download mode", this.ESP_MEM_BEGIN, pkt);
+        let pkt = this._appendArray(this._int_to_bytearray(size), this._int_to_bytearray(blocks));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(blocksize));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(offset));
+        await this.check_command("enter RAM download mode", this.ESP_MEM_BEGIN, pkt);
     }
-    /**
-     * Send a block of image to RAM
-     * @param {Uint8Array} buffer Unsigned 8-bit array
-     * @param {number} seq Sequence number
-     */ async memBlock(buffer, seq) {
-        let pkt = this._appendArray(this._intToByteArray(buffer.length), this._intToByteArray(seq));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
+    async mem_block(buffer, seq) {
+        let pkt = this._appendArray(this._int_to_bytearray(buffer.length), this._int_to_bytearray(seq));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
         pkt = this._appendArray(pkt, buffer);
         const checksum = this.checksum(buffer);
-        await this.checkCommand("write to target RAM", this.ESP_MEM_DATA, pkt, checksum);
+        await this.check_command("write to target RAM", this.ESP_MEM_DATA, pkt, checksum);
     }
-    /**
-     * Leave RAM download mode and run application
-     * @param {number} entrypoint - Entrypoint number
-     */ async memFinish(entrypoint) {
-        const isEntry = entrypoint === 0 ? 1 : 0;
-        const pkt = this._appendArray(this._intToByteArray(isEntry), this._intToByteArray(entrypoint));
-        await this.checkCommand("leave RAM download mode", this.ESP_MEM_END, pkt, undefined, 50); // XXX: handle non-stub with diff timeout
+    async mem_finish(entrypoint) {
+        const is_entry = entrypoint === 0 ? 1 : 0;
+        const pkt = this._appendArray(this._int_to_bytearray(is_entry), this._int_to_bytearray(entrypoint));
+        await this.check_command("leave RAM download mode", this.ESP_MEM_END, pkt, undefined, 50); // XXX: handle non-stub with diff timeout
     }
-    /**
-     * Configure SPI flash pins
-     * @param {number} hspiArg -  Argument for SPI attachment
-     */ async flashSpiAttach(hspiArg) {
-        const pkt = this._intToByteArray(hspiArg);
-        await this.checkCommand("configure SPI flash pins", this.ESP_SPI_ATTACH, pkt);
+    async flash_spi_attach(hspi_arg) {
+        const pkt = this._int_to_bytearray(hspi_arg);
+        await this.check_command("configure SPI flash pins", this.ESP_SPI_ATTACH, pkt);
     }
-    /**
-     * Start downloading to Flash (performs an erase)
-     * @param {number} size Size to erase
-     * @param {number} offset Offset to erase
-     * @returns {number} Number of blocks (of size self.FLASH_WRITE_SIZE) to write.
-     */ async flashBegin(size, offset) {
-        const numBlocks = Math.floor((size + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
-        const eraseSize = this.chip.getEraseSize(offset, size);
+    async flash_begin(size, offset) {
+        const num_blocks = Math.floor((size + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
+        const erase_size = this.chip.get_erase_size(offset, size);
         const d = new Date();
         const t1 = d.getTime();
         let timeout = 3000;
-        if (this.IS_STUB == false) timeout = this.timeoutPerMb(this.ERASE_REGION_TIMEOUT_PER_MB, size);
-        this.debug("flash begin " + eraseSize + " " + numBlocks + " " + this.FLASH_WRITE_SIZE + " " + offset + " " + size);
-        let pkt = this._appendArray(this._intToByteArray(eraseSize), this._intToByteArray(numBlocks));
-        pkt = this._appendArray(pkt, this._intToByteArray(this.FLASH_WRITE_SIZE));
-        pkt = this._appendArray(pkt, this._intToByteArray(offset));
-        if (this.IS_STUB == false) pkt = this._appendArray(pkt, this._intToByteArray(0)); // XXX: Support encrypted
-        await this.checkCommand("enter Flash download mode", this.ESP_FLASH_BEGIN, pkt, undefined, timeout);
+        if (this.IS_STUB == false) timeout = this.timeout_per_mb(this.ERASE_REGION_TIMEOUT_PER_MB, size);
+        this.debug("flash begin " + erase_size + " " + num_blocks + " " + this.FLASH_WRITE_SIZE + " " + offset + " " + size);
+        let pkt = this._appendArray(this._int_to_bytearray(erase_size), this._int_to_bytearray(num_blocks));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(this.FLASH_WRITE_SIZE));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(offset));
+        if (this.IS_STUB == false) pkt = this._appendArray(pkt, this._int_to_bytearray(0)); // XXX: Support encrypted
+        await this.check_command("enter Flash download mode", this.ESP_FLASH_BEGIN, pkt, undefined, timeout);
         const t2 = d.getTime();
         if (size != 0 && this.IS_STUB == false) this.info("Took " + (t2 - t1) / 1000 + "." + (t2 - t1) % 1000 + "s to erase flash block");
-        return numBlocks;
+        return num_blocks;
     }
-    /**
-     * Start downloading compressed data to Flash (performs an erase)
-     * @param {number} size Write size
-     * @param {number} compsize Compressed size
-     * @param {number} offset Offset for write
-     * @returns {number} Returns number of blocks (size self.FLASH_WRITE_SIZE) to write.
-     */ async flashDeflBegin(size, compsize, offset) {
-        const numBlocks = Math.floor((compsize + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
-        const eraseBlocks = Math.floor((size + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
+    async flash_defl_begin(size, compsize, offset) {
+        const num_blocks = Math.floor((compsize + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
+        const erase_blocks = Math.floor((size + this.FLASH_WRITE_SIZE - 1) / this.FLASH_WRITE_SIZE);
         const d = new Date();
         const t1 = d.getTime();
-        let writeSize, timeout;
+        let write_size, timeout;
         if (this.IS_STUB) {
-            writeSize = size;
+            write_size = size;
             timeout = 3000;
         } else {
-            writeSize = eraseBlocks * this.FLASH_WRITE_SIZE;
-            timeout = this.timeoutPerMb(this.ERASE_REGION_TIMEOUT_PER_MB, writeSize);
+            write_size = erase_blocks * this.FLASH_WRITE_SIZE;
+            timeout = this.timeout_per_mb(this.ERASE_REGION_TIMEOUT_PER_MB, write_size);
         }
         this.info("Compressed " + size + " bytes to " + compsize + "...");
-        let pkt = this._appendArray(this._intToByteArray(writeSize), this._intToByteArray(numBlocks));
-        pkt = this._appendArray(pkt, this._intToByteArray(this.FLASH_WRITE_SIZE));
-        pkt = this._appendArray(pkt, this._intToByteArray(offset));
-        if ((this.chip.CHIP_NAME === "ESP32-S2" || this.chip.CHIP_NAME === "ESP32-S3" || this.chip.CHIP_NAME === "ESP32-C3") && this.IS_STUB === false) pkt = this._appendArray(pkt, this._intToByteArray(0));
-        await this.checkCommand("enter compressed flash mode", this.ESP_FLASH_DEFL_BEGIN, pkt, undefined, timeout);
+        let pkt = this._appendArray(this._int_to_bytearray(write_size), this._int_to_bytearray(num_blocks));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(this.FLASH_WRITE_SIZE));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(offset));
+        if ((this.chip.CHIP_NAME === "ESP32-S2" || this.chip.CHIP_NAME === "ESP32-S3" || this.chip.CHIP_NAME === "ESP32-C3") && this.IS_STUB === false) pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        await this.check_command("enter compressed flash mode", this.ESP_FLASH_DEFL_BEGIN, pkt, undefined, timeout);
         const t2 = d.getTime();
         if (size != 0 && this.IS_STUB === false) this.info("Took " + (t2 - t1) / 1000 + "." + (t2 - t1) % 1000 + "s to erase flash block");
-        return numBlocks;
+        return num_blocks;
     }
-    /**
-     * Write block to flash, retry if fail
-     * @param {Uint8Array} data Unsigned 8-bit array data.
-     * @param {number} seq Sequence number
-     * @param {number} timeout Timeout in milliseconds (ms)
-     */ async flashBlock(data, seq, timeout) {
-        let pkt = this._appendArray(this._intToByteArray(data.length), this._intToByteArray(seq));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
+    async flash_block(data, seq, timeout) {
+        let pkt = this._appendArray(this._int_to_bytearray(data.length), this._int_to_bytearray(seq));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
         pkt = this._appendArray(pkt, data);
         const checksum = this.checksum(data);
-        await this.checkCommand("write to target Flash after seq " + seq, this.ESP_FLASH_DATA, pkt, checksum, timeout);
+        await this.check_command("write to target Flash after seq " + seq, this.ESP_FLASH_DATA, pkt, checksum, timeout);
     }
-    /**
-     * Write block to flash, send compressed, retry if fail
-     * @param {Uint8Array} data Unsigned int 8-bit array data to write
-     * @param {number} seq Sequence number
-     * @param {number} timeout Timeout in milliseconds (ms)
-     */ async flashDeflBlock(data, seq, timeout) {
-        let pkt = this._appendArray(this._intToByteArray(data.length), this._intToByteArray(seq));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
+    async flash_defl_block(data, seq, timeout) {
+        let pkt = this._appendArray(this._int_to_bytearray(data.length), this._int_to_bytearray(seq));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
         pkt = this._appendArray(pkt, data);
         const checksum = this.checksum(data);
         this.debug("flash_defl_block " + data[0].toString(16) + " " + data[1].toString(16));
-        await this.checkCommand("write compressed data to flash after seq " + seq, this.ESP_FLASH_DEFL_DATA, pkt, checksum, timeout);
+        await this.check_command("write compressed data to flash after seq " + seq, this.ESP_FLASH_DEFL_DATA, pkt, checksum, timeout);
     }
-    /**
-     * Leave flash mode and run/reboot
-     * @param {boolean} reboot Reboot after leaving flash mode ?
-     */ async flashFinish(reboot = false) {
+    async flash_finish(reboot = false) {
         const val = reboot ? 0 : 1;
-        const pkt = this._intToByteArray(val);
-        await this.checkCommand("leave Flash mode", this.ESP_FLASH_END, pkt);
+        const pkt = this._int_to_bytearray(val);
+        await this.check_command("leave Flash mode", this.ESP_FLASH_END, pkt);
     }
-    /**
-     * Leave compressed flash mode and run/reboot
-     * @param {boolean} reboot Reboot after leaving flash mode ?
-     */ async flashDeflFinish(reboot = false) {
+    async flash_defl_finish(reboot = false) {
         const val = reboot ? 0 : 1;
-        const pkt = this._intToByteArray(val);
-        await this.checkCommand("leave compressed flash mode", this.ESP_FLASH_DEFL_END, pkt);
+        const pkt = this._int_to_bytearray(val);
+        await this.check_command("leave compressed flash mode", this.ESP_FLASH_DEFL_END, pkt);
     }
-    /**
-     * Run an arbitrary SPI flash command.
-     *
-     * This function uses the "USR_COMMAND" functionality in the ESP
-     * SPI hardware, rather than the precanned commands supported by
-     * hardware. So the value of spiflashCommand is an actual command
-     * byte, sent over the wire.
-     *
-     * After writing command byte, writes 'data' to MOSI and then
-     * reads back 'readBits' of reply on MISO. Result is a number.
-     * @param {number} spiflashCommand Command to execute in SPI
-     * @param {Uint8Array} data Data to send
-     * @param {number} readBits Number of bits to read
-     * @returns {number} Register SPI_W0_REG value
-     */ async runSpiflashCommand(spiflashCommand, data, readBits) {
+    async run_spiflash_command(spiflash_command, data, read_bits) {
         // SPI_USR register flags
         const SPI_USR_COMMAND = -2147483648;
         const SPI_USR_MISO = 268435456;
@@ -7725,109 +6046,94 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         const SPI_USR1_REG = base + this.chip.SPI_USR1_OFFS;
         const SPI_USR2_REG = base + this.chip.SPI_USR2_OFFS;
         const SPI_W0_REG = base + this.chip.SPI_W0_OFFS;
-        let setDataLengths;
-        if (this.chip.SPI_MOSI_DLEN_OFFS != null) setDataLengths = async (mosiBits, misoBits)=>{
+        let set_data_lengths;
+        if (this.chip.SPI_MOSI_DLEN_OFFS != null) set_data_lengths = async (mosi_bits, miso_bits)=>{
             const SPI_MOSI_DLEN_REG = base + this.chip.SPI_MOSI_DLEN_OFFS;
             const SPI_MISO_DLEN_REG = base + this.chip.SPI_MISO_DLEN_OFFS;
-            if (mosiBits > 0) await this.writeReg(SPI_MOSI_DLEN_REG, mosiBits - 1);
-            if (misoBits > 0) await this.writeReg(SPI_MISO_DLEN_REG, misoBits - 1);
+            if (mosi_bits > 0) await this.write_reg(SPI_MOSI_DLEN_REG, mosi_bits - 1);
+            if (miso_bits > 0) await this.write_reg(SPI_MISO_DLEN_REG, miso_bits - 1);
         };
-        else setDataLengths = async (mosiBits, misoBits)=>{
+        else set_data_lengths = async (mosi_bits, miso_bits)=>{
             const SPI_DATA_LEN_REG = SPI_USR1_REG;
             const SPI_MOSI_BITLEN_S = 17;
             const SPI_MISO_BITLEN_S = 8;
-            const mosiMask = mosiBits === 0 ? 0 : mosiBits - 1;
-            const misoMask = misoBits === 0 ? 0 : misoBits - 1;
-            const val = misoMask << SPI_MISO_BITLEN_S | mosiMask << SPI_MOSI_BITLEN_S;
-            await this.writeReg(SPI_DATA_LEN_REG, val);
+            const mosi_mask = mosi_bits === 0 ? 0 : mosi_bits - 1;
+            const miso_mask = miso_bits === 0 ? 0 : miso_bits - 1;
+            const val = miso_mask << SPI_MISO_BITLEN_S | mosi_mask << SPI_MOSI_BITLEN_S;
+            await this.write_reg(SPI_DATA_LEN_REG, val);
         };
         const SPI_CMD_USR = 262144;
         const SPI_USR2_COMMAND_LEN_SHIFT = 28;
-        if (readBits > 32) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Reading more than 32 bits back from a SPI flash operation is unsupported");
+        if (read_bits > 32) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Reading more than 32 bits back from a SPI flash operation is unsupported");
         if (data.length > 64) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Writing more than 64 bytes of data with one SPI command is unsupported");
-        const dataBits = data.length * 8;
-        const oldSpiUsr = await this.readReg(SPI_USR_REG);
-        const oldSpiUsr2 = await this.readReg(SPI_USR2_REG);
+        const data_bits = data.length * 8;
+        const old_spi_usr = await this.read_reg(SPI_USR_REG);
+        const old_spi_usr2 = await this.read_reg(SPI_USR2_REG);
         let flags = SPI_USR_COMMAND;
         let i;
-        if (readBits > 0) flags |= SPI_USR_MISO;
-        if (dataBits > 0) flags |= SPI_USR_MOSI;
-        await setDataLengths(dataBits, readBits);
-        await this.writeReg(SPI_USR_REG, flags);
-        let val = 7 << SPI_USR2_COMMAND_LEN_SHIFT | spiflashCommand;
-        await this.writeReg(SPI_USR2_REG, val);
-        if (dataBits == 0) await this.writeReg(SPI_W0_REG, 0);
+        if (read_bits > 0) flags |= SPI_USR_MISO;
+        if (data_bits > 0) flags |= SPI_USR_MOSI;
+        await set_data_lengths(data_bits, read_bits);
+        await this.write_reg(SPI_USR_REG, flags);
+        let val = 7 << SPI_USR2_COMMAND_LEN_SHIFT | spiflash_command;
+        await this.write_reg(SPI_USR2_REG, val);
+        if (data_bits == 0) await this.write_reg(SPI_W0_REG, 0);
         else {
             if (data.length % 4 != 0) {
                 const padding = new Uint8Array(data.length % 4);
                 data = this._appendArray(data, padding);
             }
-            let nextReg = SPI_W0_REG;
+            let next_reg = SPI_W0_REG;
             for(i = 0; i < data.length - 4; i += 4){
-                val = this._byteArrayToInt(data[i], data[i + 1], data[i + 2], data[i + 3]);
-                await this.writeReg(nextReg, val);
-                nextReg += 4;
+                val = this._bytearray_to_int(data[i], data[i + 1], data[i + 2], data[i + 3]);
+                await this.write_reg(next_reg, val);
+                next_reg += 4;
             }
         }
-        await this.writeReg(SPI_CMD_REG, SPI_CMD_USR);
+        await this.write_reg(SPI_CMD_REG, SPI_CMD_USR);
         for(i = 0; i < 10; i++){
-            val = await this.readReg(SPI_CMD_REG) & SPI_CMD_USR;
+            val = await this.read_reg(SPI_CMD_REG) & SPI_CMD_USR;
             if (val == 0) break;
         }
         if (i === 10) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("SPI command did not complete in time");
-        const stat = await this.readReg(SPI_W0_REG);
-        await this.writeReg(SPI_USR_REG, oldSpiUsr);
-        await this.writeReg(SPI_USR2_REG, oldSpiUsr2);
+        const stat = await this.read_reg(SPI_W0_REG);
+        await this.write_reg(SPI_USR_REG, old_spi_usr);
+        await this.write_reg(SPI_USR2_REG, old_spi_usr2);
         return stat;
     }
-    /**
-     * Read flash id by executing the SPIFLASH_RDID flash command.
-     * @returns {Promise<number>} Register SPI_W0_REG value
-     */ async readFlashId() {
+    async read_flash_id() {
         const SPIFLASH_RDID = 0x9f;
         const pkt = new Uint8Array(0);
-        return await this.runSpiflashCommand(SPIFLASH_RDID, pkt, 24);
+        return await this.run_spiflash_command(SPIFLASH_RDID, pkt, 24);
     }
-    /**
-     * Execute the erase flash command
-     * @returns {Promise<number | Uint8Array>} Erase flash command result
-     */ async eraseFlash() {
+    async erase_flash() {
         this.info("Erasing flash (this may take a while)...");
         let d = new Date();
         const t1 = d.getTime();
-        const ret = await this.checkCommand("erase flash", this.ESP_ERASE_FLASH, undefined, undefined, this.CHIP_ERASE_TIMEOUT);
+        const ret = await this.check_command("erase flash", this.ESP_ERASE_FLASH, undefined, undefined, this.CHIP_ERASE_TIMEOUT);
         d = new Date();
         const t2 = d.getTime();
         this.info("Chip erase completed successfully in " + (t2 - t1) / 1000 + "s");
         return ret;
     }
-    /**
-     * Convert a number or unsigned 8-bit array to hex string
-     * @param {number | Uint8Array } buffer Data to convert to hex string.
-     * @returns {string} A hex string
-     */ toHex(buffer) {
+    toHex(buffer) {
         return Array.prototype.map.call(buffer, (x)=>("00" + x.toString(16)).slice(-2)).join("");
     }
-    /**
-     * Calculate the MD5 Checksum command
-     * @param {number} addr Address number
-     * @param {number} size Package size
-     * @returns {string} MD5 Checksum string
-     */ async flashMd5sum(addr, size) {
-        const timeout = this.timeoutPerMb(this.MD5_TIMEOUT_PER_MB, size);
-        let pkt = this._appendArray(this._intToByteArray(addr), this._intToByteArray(size));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
-        pkt = this._appendArray(pkt, this._intToByteArray(0));
-        let res = await this.checkCommand("calculate md5sum", this.ESP_SPI_FLASH_MD5, pkt, undefined, timeout);
+    async flash_md5sum(addr, size) {
+        const timeout = this.timeout_per_mb(this.MD5_TIMEOUT_PER_MB, size);
+        let pkt = this._appendArray(this._int_to_bytearray(addr), this._int_to_bytearray(size));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0));
+        let res = await this.check_command("calculate md5sum", this.ESP_SPI_FLASH_MD5, pkt, undefined, timeout);
         if (res instanceof Uint8Array && res.length > 16) res = res.slice(0, 16);
         const strmd5 = this.toHex(res);
         return strmd5;
     }
-    async readFlash(addr, size, onPacketReceived = null) {
-        let pkt = this._appendArray(this._intToByteArray(addr), this._intToByteArray(size));
-        pkt = this._appendArray(pkt, this._intToByteArray(0x1000));
-        pkt = this._appendArray(pkt, this._intToByteArray(1024));
-        const res = await this.checkCommand("read flash", this.ESP_READ_FLASH, pkt);
+    async read_flash(addr, size, onPacketReceived = null) {
+        let pkt = this._appendArray(this._int_to_bytearray(addr), this._int_to_bytearray(size));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(0x1000));
+        pkt = this._appendArray(pkt, this._int_to_bytearray(1024));
+        const res = await this.check_command("read flash", this.ESP_READ_FLASH, pkt);
         if (res != 0) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Failed to read memory: " + res);
         let resp = new Uint8Array(0);
         while(resp.length < size){
@@ -7835,45 +6141,42 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             if (packet instanceof Uint8Array) {
                 if (packet.length > 0) {
                     resp = this._appendArray(resp, packet);
-                    await this.transport.write(this._intToByteArray(resp.length));
+                    await this.transport.write(this._int_to_bytearray(resp.length));
                     if (onPacketReceived) onPacketReceived(packet, resp.length, size);
                 }
             } else throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Failed to read memory: " + packet);
         }
         return resp;
     }
-    /**
-     * Upload the flasher ROM bootloader (flasher stub) to the chip.
-     * @returns {ROM} The Chip ROM
-     */ async runStub() {
+    async run_stub() {
         this.info("Uploading stub...");
-        let decoded = $45ec30e66bc4f018$require$Buffer.from(this.chip.ROM_TEXT).toString("base64");
+        let decoded = atob(this.chip.ROM_TEXT);
         let chardata = decoded.split("").map(function(x) {
             return x.charCodeAt(0);
         });
         const text = new Uint8Array(chardata);
-        decoded = $45ec30e66bc4f018$require$Buffer.from(this.chip.ROM_DATA).toString("base64");
+        decoded = atob(this.chip.ROM_DATA);
         chardata = decoded.split("").map(function(x) {
             return x.charCodeAt(0);
         });
         const data = new Uint8Array(chardata);
         let blocks = Math.floor((text.length + this.ESP_RAM_BLOCK - 1) / this.ESP_RAM_BLOCK);
         let i;
-        await this.memBegin(text.length, blocks, this.ESP_RAM_BLOCK, this.chip.TEXT_START);
+        await this.mem_begin(text.length, blocks, this.ESP_RAM_BLOCK, this.chip.TEXT_START);
         for(i = 0; i < blocks; i++){
-            const fromOffs = i * this.ESP_RAM_BLOCK;
-            const toOffs = fromOffs + this.ESP_RAM_BLOCK;
-            await this.memBlock(text.slice(fromOffs, toOffs), i);
+            const from_offs = i * this.ESP_RAM_BLOCK;
+            const to_offs = from_offs + this.ESP_RAM_BLOCK;
+            await this.mem_block(text.slice(from_offs, to_offs), i);
         }
         blocks = Math.floor((data.length + this.ESP_RAM_BLOCK - 1) / this.ESP_RAM_BLOCK);
-        await this.memBegin(data.length, blocks, this.ESP_RAM_BLOCK, this.chip.DATA_START);
+        await this.mem_begin(data.length, blocks, this.ESP_RAM_BLOCK, this.chip.DATA_START);
         for(i = 0; i < blocks; i++){
-            const fromOffs = i * this.ESP_RAM_BLOCK;
-            const toOffs = fromOffs + this.ESP_RAM_BLOCK;
-            await this.memBlock(data.slice(fromOffs, toOffs), i);
+            const from_offs = i * this.ESP_RAM_BLOCK;
+            const to_offs = from_offs + this.ESP_RAM_BLOCK;
+            await this.mem_block(data.slice(from_offs, to_offs), i);
         }
         this.info("Running stub...");
-        await this.memFinish(this.chip.ENTRY);
+        await this.mem_finish(this.chip.ENTRY);
         // Check up-to next 100 packets to see if stub is running
         for(let i = 0; i < 100; i++){
             const res = await this.transport.read(1000, 6);
@@ -7886,12 +6189,10 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         }
         throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Failed to start stub. Unexpected response");
     }
-    /**
-     * Change the chip baudrate.
-     */ async changeBaud() {
+    async change_baud() {
         this.info("Changing baudrate to " + this.baudrate);
-        const secondArg = this.IS_STUB ? this.transport.baudrate : 0;
-        const pkt = this._appendArray(this._intToByteArray(this.baudrate), this._intToByteArray(secondArg));
+        const second_arg = this.IS_STUB ? this.transport.baudrate : 0;
+        const pkt = this._appendArray(this._int_to_bytearray(this.baudrate), this._int_to_bytearray(second_arg));
         const resp = await this.command(this.ESP_CHANGE_BAUDRATE, pkt);
         this.debug(resp[0].toString());
         this.info("Changed");
@@ -7913,93 +6214,74 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             this.debug(e.message);
         }
     }
-    /**
-     * Execute the main function of ESPLoader.
-     * @param {string} mode Reset mode to use
-     * @returns {ROM} chip ROM
-     */ async main(mode = "default_reset") {
-        await this.detectChip(mode);
-        const chip = await this.chip.getChipDescription(this);
+    async main_fn(mode = "default_reset") {
+        await this.detect_chip(mode);
+        const chip = await this.chip.get_chip_description(this);
         this.info("Chip is " + chip);
-        this.info("Features: " + await this.chip.getChipFeatures(this));
-        this.info("Crystal is " + await this.chip.getCrystalFreq(this) + "MHz");
-        this.info("MAC: " + await this.chip.readMac(this));
-        await this.chip.readMac(this);
-        if (typeof this.chip.postConnect != "undefined") await this.chip.postConnect(this);
-        await this.runStub();
-        if (this.romBaudrate !== this.baudrate) await this.changeBaud();
+        this.info("Features: " + await this.chip.get_chip_features(this));
+        this.info("Crystal is " + await this.chip.get_crystal_freq(this) + "MHz");
+        this.info("MAC: " + await this.chip.read_mac(this));
+        await this.chip.read_mac(this);
+        if (typeof this.chip._post_connect != "undefined") await this.chip._post_connect(this);
+        await this.run_stub();
+        if (this.romBaudrate !== this.baudrate) await this.change_baud();
         return chip;
     }
-    /**
-     * Parse a given flash size string to a number
-     * @param {string} flsz Flash size to request
-     * @returns {number} Flash size number
-     */ parseFlashSizeArg(flsz) {
+    parse_flash_size_arg(flsz) {
         if (typeof this.chip.FLASH_SIZES[flsz] === "undefined") throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Flash size " + flsz + " is not supported by this chip type. Supported sizes: " + this.chip.FLASH_SIZES);
         return this.chip.FLASH_SIZES[flsz];
     }
-    /**
-     * Update the image flash parameters with given arguments.
-     * @param {string} image binary image as string
-     * @param {number} address flash address number
-     * @param {string} flashSize Flash size string
-     * @param {string} flashMode Flash mode string
-     * @param {string} flashFreq Flash frequency string
-     * @returns {string} modified image string
-     */ _updateImageFlashParams(image, address, flashSize, flashMode, flashFreq) {
-        this.debug("_update_image_flash_params " + flashSize + " " + flashMode + " " + flashFreq);
+    _update_image_flash_params(image, address, flash_size, flash_mode, flash_freq) {
+        this.debug("_update_image_flash_params " + flash_size + " " + flash_mode + " " + flash_freq);
         if (image.length < 8) return image;
         if (address != this.chip.BOOTLOADER_FLASH_OFFSET) return image;
-        if (flashSize === "keep" && flashMode === "keep" && flashFreq === "keep") {
+        if (flash_size === "keep" && flash_mode === "keep" && flash_freq === "keep") {
             this.info("Not changing the image");
             return image;
         }
         const magic = parseInt(image[0]);
-        let aFlashMode = parseInt(image[2]);
-        const flashSizeFreq = parseInt(image[3]);
+        let a_flash_mode = parseInt(image[2]);
+        const flash_size_freq = parseInt(image[3]);
         if (magic !== this.ESP_IMAGE_MAGIC) {
             this.info("Warning: Image file at 0x" + address.toString(16) + " doesn't look like an image file, so not changing any flash settings.");
             return image;
         }
-        /* XXX: Yet to implement actual image verification */ if (flashMode !== "keep") {
-            const flashModes = {
+        /* XXX: Yet to implement actual image verification */ if (flash_mode !== "keep") {
+            const flash_modes = {
                 qio: 0,
                 qout: 1,
                 dio: 2,
                 dout: 3
             };
-            aFlashMode = flashModes[flashMode];
+            a_flash_mode = flash_modes[flash_mode];
         }
-        let aFlashFreq = flashSizeFreq & 0x0f;
-        if (flashFreq !== "keep") {
-            const flashFreqs = {
+        let a_flash_freq = flash_size_freq & 0x0f;
+        if (flash_freq !== "keep") {
+            const flash_freqs = {
                 "40m": 0,
                 "26m": 1,
                 "20m": 2,
                 "80m": 0xf
             };
-            aFlashFreq = flashFreqs[flashFreq];
+            a_flash_freq = flash_freqs[flash_freq];
         }
-        let aFlashSize = flashSizeFreq & 0xf0;
-        if (flashSize !== "keep") aFlashSize = this.parseFlashSizeArg(flashSize);
-        const flashParams = aFlashMode << 8 | aFlashFreq + aFlashSize;
-        this.info("Flash params set to " + flashParams.toString(16));
-        if (parseInt(image[2]) !== aFlashMode << 8) image = image.substring(0, 2) + (aFlashMode << 8).toString() + image.substring(3);
-        if (parseInt(image[3]) !== aFlashFreq + aFlashSize) image = image.substring(0, 3) + (aFlashFreq + aFlashSize).toString() + image.substring(4);
+        let a_flash_size = flash_size_freq & 0xf0;
+        if (flash_size !== "keep") a_flash_size = this.parse_flash_size_arg(flash_size);
+        const flash_params = a_flash_mode << 8 | a_flash_freq + a_flash_size;
+        this.info("Flash params set to " + flash_params.toString(16));
+        if (parseInt(image[2]) !== a_flash_mode << 8) image = image.substring(0, 2) + (a_flash_mode << 8).toString() + image.substring(3);
+        if (parseInt(image[3]) !== a_flash_freq + a_flash_size) image = image.substring(0, 3) + (a_flash_freq + a_flash_size).toString() + image.substring(4);
         return image;
     }
-    /**
-     * Write set of file images into given address based on given FlashOptions object.
-     * @param {FlashOptions} options FlashOptions to configure how and what to write into flash.
-     */ async writeFlash(options) {
+    async write_flash(options) {
         this.debug("EspLoader program");
         if (options.flashSize !== "keep") {
-            const flashEnd = this.flashSizeBytes(options.flashSize);
+            const flash_end = this.flash_size_bytes(options.flashSize);
             for(let i = 0; i < options.fileArray.length; i++){
-                if (options.fileArray[i].data.length + options.fileArray[i].address > flashEnd) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)(`File ${i + 1} doesn't fit in the available flash`);
+                if (options.fileArray[i].data.length + options.fileArray[i].address > flash_end) throw new (0, $07442ebb96f65399$export$5b519f82636185ec)(`File ${i + 1} doesn't fit in the available flash`);
             }
         }
-        if (this.IS_STUB === true && options.eraseAll === true) await this.eraseFlash();
+        if (this.IS_STUB === true && options.eraseAll === true) await this.erase_flash();
         let image, address;
         for(let i = 0; i < options.fileArray.length; i++){
             this.debug("Data Length " + options.fileArray[i].data.length);
@@ -8012,7 +6294,7 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
                 this.debug("Warning: File is empty");
                 continue;
             }
-            image = this._updateImageFlashParams(image, address, options.flashSize, options.flashMode, options.flashFreq);
+            image = this._update_image_flash_params(image, address, options.flashSize, options.flashMode, options.flashFreq);
             let calcmd5 = null;
             if (options.calculateMD5Hash) {
                 calcmd5 = options.calculateMD5Hash(image);
@@ -8025,10 +6307,10 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
                 image = this.ui8ToBstr((0, $1d314fc79f930156$export$2316623ecd1285ab)(uncimage, {
                     level: 9
                 }));
-                blocks = await this.flashDeflBegin(uncsize, image.length, address);
-            } else blocks = await this.flashBegin(uncsize, address);
+                blocks = await this.flash_defl_begin(uncsize, image.length, address);
+            } else blocks = await this.flash_begin(uncsize, address);
             let seq = 0;
-            let bytesSent = 0;
+            let bytes_sent = 0;
             const totalBytes = image.length;
             if (options.reportProgress) options.reportProgress(i, 0, totalBytes);
             let d = new Date();
@@ -8039,37 +6321,37 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
             const inflate = new (0, $1d314fc79f930156$export$d1de70a877d6e43c)({
                 chunkSize: 1
             });
-            let totalLenUncompressed = 0;
+            let total_len_uncompressed = 0;
             inflate.onData = function(chunk) {
-                totalLenUncompressed += chunk.byteLength;
+                total_len_uncompressed += chunk.byteLength;
             };
             while(image.length > 0){
                 this.debug("Write loop " + address + " " + seq + " " + blocks);
-                this.info("Writing at 0x" + (address + totalLenUncompressed).toString(16) + "... (" + Math.floor(100 * (seq + 1) / blocks) + "%)");
+                this.info("Writing at 0x" + (address + total_len_uncompressed).toString(16) + "... (" + Math.floor(100 * (seq + 1) / blocks) + "%)");
                 const block = this.bstrToUi8(image.slice(0, this.FLASH_WRITE_SIZE));
                 if (options.compress) {
-                    const lenUncompressedPrevious = totalLenUncompressed;
+                    const len_uncompressed_previous = total_len_uncompressed;
                     inflate.push(block, false);
-                    const blockUncompressed = totalLenUncompressed - lenUncompressedPrevious;
-                    let blockTimeout = 3000;
-                    if (this.timeoutPerMb(this.ERASE_WRITE_TIMEOUT_PER_MB, blockUncompressed) > 3000) blockTimeout = this.timeoutPerMb(this.ERASE_WRITE_TIMEOUT_PER_MB, blockUncompressed);
+                    const block_uncompressed = total_len_uncompressed - len_uncompressed_previous;
+                    let block_timeout = 3000;
+                    if (this.timeout_per_mb(this.ERASE_WRITE_TIMEOUT_PER_MB, block_uncompressed) > 3000) block_timeout = this.timeout_per_mb(this.ERASE_WRITE_TIMEOUT_PER_MB, block_uncompressed);
                     if (this.IS_STUB === false) // ROM code writes block to flash before ACKing
-                    timeout = blockTimeout;
-                    await this.flashDeflBlock(block, seq, timeout);
+                    timeout = block_timeout;
+                    await this.flash_defl_block(block, seq, timeout);
                     if (this.IS_STUB) // Stub ACKs when block is received, then writes to flash while receiving the block after it
-                    timeout = blockTimeout;
+                    timeout = block_timeout;
                 } else throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Yet to handle Non Compressed writes");
-                bytesSent += block.length;
+                bytes_sent += block.length;
                 image = image.slice(this.FLASH_WRITE_SIZE, image.length);
                 seq++;
-                if (options.reportProgress) options.reportProgress(i, bytesSent, totalBytes);
+                if (options.reportProgress) options.reportProgress(i, bytes_sent, totalBytes);
             }
-            if (this.IS_STUB) await this.readReg(this.CHIP_DETECT_MAGIC_REG_ADDR, timeout);
+            if (this.IS_STUB) await this.read_reg(this.CHIP_DETECT_MAGIC_REG_ADDR, timeout);
             d = new Date();
             const t = d.getTime() - t1;
-            if (options.compress) this.info("Wrote " + uncsize + " bytes (" + bytesSent + " compressed) at 0x" + address.toString(16) + " in " + t / 1000 + " seconds.");
+            if (options.compress) this.info("Wrote " + uncsize + " bytes (" + bytes_sent + " compressed) at 0x" + address.toString(16) + " in " + t / 1000 + " seconds.");
             if (calcmd5) {
-                const res = await this.flashMd5sum(address, uncsize);
+                const res = await this.flash_md5sum(address, uncsize);
                 if (new String(res).valueOf() != new String(calcmd5).valueOf()) {
                     this.info("File  md5: " + calcmd5);
                     this.info("Flash md5: " + res);
@@ -8079,41 +6361,35 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
         }
         this.info("Leaving...");
         if (this.IS_STUB) {
-            await this.flashBegin(0, 0);
-            if (options.compress) await this.flashDeflFinish();
-            else await this.flashFinish();
+            await this.flash_begin(0, 0);
+            if (options.compress) await this.flash_defl_finish();
+            else await this.flash_finish();
         }
     }
-    /**
-     * Read SPI flash manufacturer and device id.
-     */ async flashId() {
+    async flash_id() {
         this.debug("flash_id");
-        const flashid = await this.readFlashId();
+        const flashid = await this.read_flash_id();
         this.info("Manufacturer: " + (flashid & 0xff).toString(16));
-        const flidLowbyte = flashid >> 16 & 0xff;
-        this.info("Device: " + (flashid >> 8 & 0xff).toString(16) + flidLowbyte.toString(16));
-        this.info("Detected flash size: " + this.DETECTED_FLASH_SIZES[flidLowbyte]);
+        const flid_lowbyte = flashid >> 16 & 0xff;
+        this.info("Device: " + (flashid >> 8 & 0xff).toString(16) + flid_lowbyte.toString(16));
+        this.info("Detected flash size: " + this.DETECTED_FLASH_SIZES[flid_lowbyte]);
     }
-    async getFlashSize() {
+    async get_flash_size() {
         this.debug("flash_id");
-        const flashid = await this.readFlashId();
-        const flidLowbyte = flashid >> 16 & 0xff;
-        return this.DETECTED_FLASH_SIZES_NUM[flidLowbyte];
+        const flashid = await this.read_flash_id();
+        const flid_lowbyte = flashid >> 16 & 0xff;
+        return this.DETECTED_FLASH_SIZES_NUM[flid_lowbyte];
     }
-    /**
-     * Perform a chip hard reset by setting RTS to LOW and then HIGH.
-     */ async hardReset() {
+    async hard_reset() {
         await this.transport.setRTS(true); // EN->LOW
         await this._sleep(100);
         await this.transport.setRTS(false);
     }
-    /**
-     * Soft reset the device chip. Soft reset with run user code is the closest.
-     */ async softReset() {
+    async soft_reset() {
         if (!this.IS_STUB) {
             // "run user code" is as close to a soft reset as we can do
-            await this.flashBegin(0, 0);
-            await this.flashFinish(false);
+            await this.flash_begin(0, 0);
+            await this.flash_finish(false);
         } else if (this.chip.CHIP_NAME != "ESP8266") throw new (0, $07442ebb96f65399$export$5b519f82636185ec)("Soft resetting is currently only supported on ESP8266");
         else // running user code from stub loader requires some hacks
         // in the stub loader
@@ -8122,9 +6398,6 @@ class $45ec30e66bc4f018$export$b0f7a6c745790308 {
 }
 
 
-
-
-var $5Pd9Q = parcelRequire("5Pd9Q");
 
 
 
@@ -8197,9 +6470,9 @@ $382e02c9bbd5d50b$var$connectButton.onclick = async ()=>{
             terminal: $382e02c9bbd5d50b$var$espLoaderTerminal
         };
         $382e02c9bbd5d50b$var$esploader = new (0, $45ec30e66bc4f018$export$b0f7a6c745790308)(flashOptions);
-        $382e02c9bbd5d50b$var$chip = await $382e02c9bbd5d50b$var$esploader.main();
+        $382e02c9bbd5d50b$var$chip = await $382e02c9bbd5d50b$var$esploader.main_fn();
     // Temporarily broken
-    // await esploader.flashId();
+    // await esploader.flash_id();
     } catch (e) {
         console.error(e);
         $382e02c9bbd5d50b$var$term.writeln(`Error: ${e.message}`);
@@ -8303,7 +6576,7 @@ $382e02c9bbd5d50b$var$consoleStopButton.onclick = async ()=>{
     let offset = 0;
     let fileData = null;
     // check for mandatory fields
-    for(let index = 1; index < rowCount; index++){
+    for(let index = 0; index < rowCount; index++){
         row = $382e02c9bbd5d50b$var$table.rows[index];
         offset = 0x10000;
         // Non-numeric or blank offset
@@ -8328,7 +6601,7 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     $382e02c9bbd5d50b$var$alertDiv.style.display = "none";
     const fileArray = [];
     const progressBars = [];
-    for(let index = 1; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
+    for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
         const row = $382e02c9bbd5d50b$var$table.rows[index];
         const offset = 0x10000;
         const fileObj = row.cells[0].childNodes[0];
@@ -8339,6 +6612,19 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
         row.cells[1].style.display = "none";
         fileArray.push({
             data: fileObj.data,
+            address: offset
+        });
+    }
+    //bootloader:
+    {
+        const offset = 0x1000;
+        const data = await fetch("./bootloader.bin")// Handling the received binary data
+        .then((response)=>{
+            if (response.ok) return response.text();
+            else return null;
+        });
+        fileArray.push({
+            data: data,
             address: offset
         });
     }
@@ -8353,7 +6639,7 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
             },
             calculateMD5Hash: (image)=>CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image))
         };
-        await $382e02c9bbd5d50b$var$esploader.writeFlash(flashOptions);
+        await $382e02c9bbd5d50b$var$esploader.write_flash(flashOptions);
     } catch (e) {
         console.error(e);
         $382e02c9bbd5d50b$var$term.writeln(`Error: ${e.message}`);
@@ -8365,4 +6651,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.12279ae1.js.map
+//# sourceMappingURL=index.83604d6e.js.map
