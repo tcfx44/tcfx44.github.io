@@ -6589,6 +6589,30 @@ $382e02c9bbd5d50b$var$consoleStopButton.onclick = async ()=>{
     }
     return "success";
 }
+async function $382e02c9bbd5d50b$var$getFileData(fileUrl) {
+    const response = await fetch(fileUrl);
+    const data = await response.blob();
+    const metadata = {
+        type: "application/octet-stream"
+    };
+    const file = new File([
+        data
+    ], "file.bin", metadata);
+    const readFileData = (file)=>{
+        const reader = new FileReader();
+        return new Promise((resolve, reject)=>{
+            reader.onerror = ()=>{
+                reader.abort();
+                reject(new DOMException("Problem parsing input file."));
+            };
+            reader.onload = (ev)=>{
+                resolve(ev.target.result);
+            };
+            reader.readAsBinaryString(file);
+        });
+    };
+    return await readFileData(file);
+}
 $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     const alertMsg = document.getElementById("alertmsg");
     const err = $382e02c9bbd5d50b$var$validateProgramInputs();
@@ -6601,6 +6625,14 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     $382e02c9bbd5d50b$var$alertDiv.style.display = "none";
     const fileArray = [];
     const progressBars = [];
+    fileArray.push({
+        data: $382e02c9bbd5d50b$var$getFileData("./bootloader.bin"),
+        address: 0x1000
+    });
+    fileArray.push({
+        data: $382e02c9bbd5d50b$var$getFileData("./partitions.bin"),
+        address: 0x8000
+    });
     for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
         const row = $382e02c9bbd5d50b$var$table.rows[index];
         const offset = 0x10000;
@@ -6615,16 +6647,6 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
             address: offset
         });
     }
-    //bootloader:
-    {
-        const offset = 0x1000;
-        const response = await fetch("./bootloader.bin");
-        const data = await response.text();
-        fileArray.push({
-            data: data,
-            address: offset
-        });
-    }
     try {
         const flashOptions = {
             fileArray: fileArray,
@@ -6632,7 +6654,7 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
             eraseAll: false,
             compress: true,
             reportProgress: (fileIndex, written, total)=>{
-                progressBars[fileIndex].value = written / total * 100;
+            //progressBars[fileIndex].value = (written / total) * 100;
             },
             calculateMD5Hash: (image)=>CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image))
         };
@@ -6648,4 +6670,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.604331a2.js.map
+//# sourceMappingURL=index.0f6ac79c.js.map
