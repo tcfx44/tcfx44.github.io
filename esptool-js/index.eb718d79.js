@@ -6644,8 +6644,7 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
         const progressBar = row.cells[1].childNodes[0];
         progressBar.textContent = "0";
         progressBars.push(progressBar);
-        row.cells[0].style.display = "initial";
-        row.cells[1].style.display = "none";
+        row.cells[1].style.display = "initial";
         fileArray.push({
             data: fileObj.data,
             address: offset
@@ -6658,7 +6657,7 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
             eraseAll: false,
             compress: true,
             reportProgress: (fileIndex, written, total)=>{
-            //progressBars[fileIndex].value = (written / total) * 100;
+                progressBars[0].value = written / total * 100;
             },
             calculateMD5Hash: (image)=>CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image))
         };
@@ -6668,10 +6667,10 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
         $382e02c9bbd5d50b$var$term.writeln(`Error: ${e.message}`);
     } finally{
         // Hide progress bars and show erase buttons
-        for(let index = 1; index < $382e02c9bbd5d50b$var$table.rows.length; index++)$382e02c9bbd5d50b$var$table.rows[index].cells[1].style.display = "none";
+        for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++)$382e02c9bbd5d50b$var$table.rows[index].cells[1].style.display = "none";
     }
 };
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.48c3bcd0.js.map
+//# sourceMappingURL=index.eb718d79.js.map
