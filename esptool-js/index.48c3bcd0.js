@@ -6626,12 +6626,16 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     const fileArray = [];
     const progressBars = [];
     fileArray.push({
-        data: $382e02c9bbd5d50b$var$getFileData("./bootloader.bin"),
+        data: await $382e02c9bbd5d50b$var$getFileData("./bootloader.bin"),
         address: 0x1000
     });
     fileArray.push({
-        data: $382e02c9bbd5d50b$var$getFileData("./partitions.bin"),
+        data: await $382e02c9bbd5d50b$var$getFileData("./partitions.bin"),
         address: 0x8000
+    });
+    fileArray.push({
+        data: await $382e02c9bbd5d50b$var$getFileData("./boot_app0.bin"),
+        address: 0xe000
     });
     for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
         const row = $382e02c9bbd5d50b$var$table.rows[index];
@@ -6670,4 +6674,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.0f6ac79c.js.map
+//# sourceMappingURL=index.48c3bcd0.js.map
