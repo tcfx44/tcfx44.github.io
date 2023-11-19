@@ -6618,11 +6618,17 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     //bootloader:
     {
         const offset = 0x1000;
-        const data = await fetch("./bootloader.bin")// Handling the received binary data
+        const blob = await fetch("./bootloader.bin")// Handling the received binary data
         .then((response)=>{
-            if (response.ok) return response.text();
+            if (response.ok) return response.blob();
             else return null;
         });
+        const reader = new FileReader();
+        let data;
+        reader.onload = (ev)=>{
+            data = ev.target.result;
+        };
+        reader.readAsBinaryString(blob);
         fileArray.push({
             data: data,
             address: offset
@@ -6651,4 +6657,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.83604d6e.js.map
+//# sourceMappingURL=index.a7e0fde3.js.map
