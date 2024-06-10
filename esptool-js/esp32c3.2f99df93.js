@@ -10,14 +10,14 @@ function $parcel$export(e, n, v, s) {
       var $parcel$global = globalThis;
     var parcelRequire = $parcel$global["parcelRequire477f"];
 var parcelRegister = parcelRequire.register;
-parcelRegister("5IUJe", function(module, exports) {
+parcelRegister("bCV3h", function(module, exports) {
 
-$parcel$export(module.exports, "ESP32C3ROM", () => $42ad10ee0333a835$export$d17dfcbab3a5ba52);
+$parcel$export(module.exports, "ESP32C3ROM", () => $876f7fa72ed7ed1a$export$d17dfcbab3a5ba52);
 
-var $8ZpYL = parcelRequire("8ZpYL");
+var $5Pd9Q = parcelRequire("5Pd9Q");
 
-var $fN7dd = parcelRequire("fN7dd");
-class $42ad10ee0333a835$export$d17dfcbab3a5ba52 extends (0, $8ZpYL.ROM) {
+var $eQbrf = parcelRequire("eQbrf");
+class $876f7fa72ed7ed1a$export$d17dfcbab3a5ba52 extends (0, $5Pd9Q.ROM) {
     constructor(){
         super(...arguments);
         this.CHIP_NAME = "ESP32-C3";
@@ -43,53 +43,53 @@ class $42ad10ee0333a835$export$d17dfcbab3a5ba52 extends (0, $8ZpYL.ROM) {
         this.SPI_MOSI_DLEN_OFFS = 0x24;
         this.SPI_MISO_DLEN_OFFS = 0x28;
         this.SPI_W0_OFFS = 0x58;
-        this.TEXT_START = (0, (/*@__PURE__*/$parcel$interopDefault($fN7dd))).text_start;
-        this.ENTRY = (0, (/*@__PURE__*/$parcel$interopDefault($fN7dd))).entry;
-        this.DATA_START = (0, (/*@__PURE__*/$parcel$interopDefault($fN7dd))).data_start;
-        this.ROM_DATA = (0, (/*@__PURE__*/$parcel$interopDefault($fN7dd))).data;
-        this.ROM_TEXT = (0, (/*@__PURE__*/$parcel$interopDefault($fN7dd))).text;
+        this.TEXT_START = (0, (/*@__PURE__*/$parcel$interopDefault($eQbrf))).text_start;
+        this.ENTRY = (0, (/*@__PURE__*/$parcel$interopDefault($eQbrf))).entry;
+        this.DATA_START = (0, (/*@__PURE__*/$parcel$interopDefault($eQbrf))).data_start;
+        this.ROM_DATA = (0, (/*@__PURE__*/$parcel$interopDefault($eQbrf))).data;
+        this.ROM_TEXT = (0, (/*@__PURE__*/$parcel$interopDefault($eQbrf))).text;
     }
-    async getPkgVersion(loader) {
-        const numWord = 3;
-        const block1Addr = this.EFUSE_BASE + 0x044;
-        const addr = block1Addr + 4 * numWord;
-        const word3 = await loader.readReg(addr);
-        const pkgVersion = word3 >> 21 & 0x07;
-        return pkgVersion;
+    async get_pkg_version(loader) {
+        const num_word = 3;
+        const block1_addr = this.EFUSE_BASE + 0x044;
+        const addr = block1_addr + 4 * num_word;
+        const word3 = await loader.read_reg(addr);
+        const pkg_version = word3 >> 21 & 0x07;
+        return pkg_version;
     }
-    async getChipRevision(loader) {
-        const block1Addr = this.EFUSE_BASE + 0x044;
-        const numWord = 3;
+    async get_chip_revision(loader) {
+        const block1_addr = this.EFUSE_BASE + 0x044;
+        const num_word = 3;
         const pos = 18;
-        const addr = block1Addr + 4 * numWord;
-        const ret = (await loader.readReg(addr) & 0x7 << pos) >> pos;
+        const addr = block1_addr + 4 * num_word;
+        const ret = (await loader.read_reg(addr) & 0x7 << pos) >> pos;
         return ret;
     }
-    async getChipDescription(loader) {
+    async get_chip_description(loader) {
         let desc;
-        const pkgVer = await this.getPkgVersion(loader);
-        if (pkgVer === 0) desc = "ESP32-C3";
+        const pkg_ver = await this.get_pkg_version(loader);
+        if (pkg_ver === 0) desc = "ESP32-C3";
         else desc = "unknown ESP32-C3";
-        const chip_rev = await this.getChipRevision(loader);
+        const chip_rev = await this.get_chip_revision(loader);
         desc += " (revision " + chip_rev + ")";
         return desc;
     }
-    async getChipFeatures(loader) {
+    async get_chip_features(loader) {
         return [
             "Wi-Fi"
         ];
     }
-    async getCrystalFreq(loader) {
+    async get_crystal_freq(loader) {
         return 40;
     }
     _d2h(d) {
         const h = (+d).toString(16);
         return h.length === 1 ? "0" + h : h;
     }
-    async readMac(loader) {
-        let mac0 = await loader.readReg(this.MAC_EFUSE_REG);
+    async read_mac(loader) {
+        let mac0 = await loader.read_reg(this.MAC_EFUSE_REG);
         mac0 = mac0 >>> 0;
-        let mac1 = await loader.readReg(this.MAC_EFUSE_REG + 4);
+        let mac1 = await loader.read_reg(this.MAC_EFUSE_REG + 4);
         mac1 = mac1 >>> 0 & 0x0000ffff;
         const mac = new Uint8Array(6);
         mac[0] = mac1 >> 8 & 0xff;
@@ -100,17 +100,28 @@ class $42ad10ee0333a835$export$d17dfcbab3a5ba52 extends (0, $8ZpYL.ROM) {
         mac[5] = mac0 & 0xff;
         return this._d2h(mac[0]) + ":" + this._d2h(mac[1]) + ":" + this._d2h(mac[2]) + ":" + this._d2h(mac[3]) + ":" + this._d2h(mac[4]) + ":" + this._d2h(mac[5]);
     }
-    getEraseSize(offset, size) {
+    get_erase_size(offset, size) {
         return size;
     }
 }
 
 });
-parcelRegister("fN7dd", function(module, exports) {
+parcelRegister("5Pd9Q", function(module, exports) {
+
+$parcel$export(module.exports, "ROM", () => $43dbec08a00b36a8$export$c643cc54d6326a6f);
+class $43dbec08a00b36a8$export$c643cc54d6326a6f {
+    get_erase_size(offset, size) {
+        return size;
+    }
+}
+
+});
+
+parcelRegister("eQbrf", function(module, exports) {
 module.exports = JSON.parse('{"entry":1077413532,"text":"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","text_start":1077411840,"data":"IGvIP3YKOEDGCjhAHgs4QMILOEAuDDhA3As4QEIJOEB+CzhAvgs4QDILOEDyCDhAZgs4QPIIOEBQCjhAlgo4QMYKOEAeCzhAYgo4QKYJOEDWCThAXgo4QIAOOEDGCjhARg04QDgOOEAyCDhAYA44QDIIOEAyCDhAMgg4QDIIOEAyCDhAMgg4QDIIOEAyCDhA4gw4QDIIOEBkDThAOA44QA==","data_start":1070164912}');
 
 });
 
 
 
-//# sourceMappingURL=esp32c3.e0a85e9b.js.map
+//# sourceMappingURL=esp32c3.2f99df93.js.map
