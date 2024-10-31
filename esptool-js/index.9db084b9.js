@@ -7033,26 +7033,17 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     $382e02c9bbd5d50b$var$alertDiv.style.display = "none";
     const fileArray = [];
     const progressBars = [];
-    fileArray.push({
-        data: await $382e02c9bbd5d50b$var$getFileData("./bootloader.bin"),
-        address: 0x1000
-    });
-    fileArray.push({
-        data: await $382e02c9bbd5d50b$var$getFileData("./partitions.bin"),
-        address: 0x8000
-    });
-    fileArray.push({
-        data: await $382e02c9bbd5d50b$var$getFileData("./boot_app0.bin"),
-        address: 0xe000
-    });
     for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
         const row = $382e02c9bbd5d50b$var$table.rows[index];
-        const offset = 0x10000;
+        // address of the default firmware app
+        let offset = 0x10000;
         const fileObj = row.cells[0].childNodes[0];
         const progressBar = row.cells[1].childNodes[0];
         progressBar.textContent = "0";
         progressBars.push(progressBar);
         row.cells[1].style.display = "initial";
+        if (fileObj.value.endsWith("littlefs.bin")) // this is filesystem image - change the address
+        offset = 0xc90000;
         fileArray.push({
             data: fileObj.data,
             address: offset
@@ -7081,4 +7072,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.32e3d005.js.map
+//# sourceMappingURL=index.9db084b9.js.map
