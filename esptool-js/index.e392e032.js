@@ -6826,6 +6826,7 @@ const $382e02c9bbd5d50b$var$lblConsoleFor = document.getElementById("lblConsoleF
 const $382e02c9bbd5d50b$var$lblConnTo = document.getElementById("lblConnTo");
 const $382e02c9bbd5d50b$var$table = document.getElementById("fileTable");
 const $382e02c9bbd5d50b$var$alertDiv = document.getElementById("alertDiv");
+const $382e02c9bbd5d50b$var$flashBootloader = document.getElementById("flashBootloader");
 const $382e02c9bbd5d50b$var$term = new Terminal({
     cols: 120,
     rows: 40
@@ -6905,7 +6906,9 @@ $382e02c9bbd5d50b$var$resetButton.onclick = async ()=>{
     await new Promise((resolve)=>setTimeout(resolve, 100));
     await $382e02c9bbd5d50b$var$transport.setDTR(true);
 };
-function $382e02c9bbd5d50b$var$addFile() {
+/**
+ * Adds a row to the table of files to be flashed
+ */ function $382e02c9bbd5d50b$var$addFile() {
     const rowCount = $382e02c9bbd5d50b$var$table.rows.length;
     const row = $382e02c9bbd5d50b$var$table.insertRow(rowCount);
     // Column 2 - File selector
@@ -7033,6 +7036,21 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
     $382e02c9bbd5d50b$var$alertDiv.style.display = "none";
     const fileArray = [];
     const progressBars = [];
+    //bootloader, partitions, etc:
+    if ($382e02c9bbd5d50b$var$flashBootloader.checked) {
+        fileArray.push({
+            data: await $382e02c9bbd5d50b$var$getFileData("./bootloader.bin"),
+            address: 0x1000
+        });
+        fileArray.push({
+            data: await $382e02c9bbd5d50b$var$getFileData("./partitions.bin"),
+            address: 0x8000
+        });
+        fileArray.push({
+            data: await $382e02c9bbd5d50b$var$getFileData("./boot_app0.bin"),
+            address: 0xe000
+        });
+    }
     for(let index = 0; index < $382e02c9bbd5d50b$var$table.rows.length; index++){
         const row = $382e02c9bbd5d50b$var$table.rows[index];
         // address of the default firmware app
@@ -7072,4 +7090,4 @@ $382e02c9bbd5d50b$var$programButton.onclick = async ()=>{
 $382e02c9bbd5d50b$var$addFile();
 
 
-//# sourceMappingURL=index.9db084b9.js.map
+//# sourceMappingURL=index.e392e032.js.map
